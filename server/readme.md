@@ -21,7 +21,11 @@ Install requirements with pip
   pip install -r server/modules/requirements.txt
   cd server
 ```
-    
+to run server in dev mode
+
+```bash
+fastapi app.py dev
+```
 ## Environment Variables
 
 To run this project, you will need to add the environment variables to your .env file. check environment variables from    
