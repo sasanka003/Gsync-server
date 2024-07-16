@@ -24,7 +24,7 @@ Install requirements with pip
 to run server in dev mode
 
 ```bash
-fastapi app.py dev
+fastapi dev app.py
 ```
 ## Environment Variables
 
