@@ -50,6 +50,9 @@ def init_redis():
 
     # create indexes for models
 
+def redis_close():
+    redis.close()
+
 
 def get_or_set_cache(key: str, value_func, expire_time=3600):
     cached_value = redis.get(key)
