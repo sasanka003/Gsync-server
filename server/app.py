@@ -37,4 +37,4 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-app.mount('/documents', StaticFiles(directory='documents'), name='documents')
+#app.mount('/documents', StaticFiles(directory='documents'), name='documents')
