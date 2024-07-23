@@ -5,7 +5,7 @@ class PostBase(BaseModel):
   title: str
   description: str
   image: str
-  userid: str
+  userid: str #  get userid from jwt
 
 class PostDisplay(BaseModel):
   postid: int
