@@ -43,6 +43,7 @@ class DbComment(Base):
     __tablename__ = "comments"
     commentId = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
+    lastUpdated = Column(DateTime, nullable=True)
     createdAt = Column(DateTime, default=datetime.utcnow)
     postId = Column(Integer, ForeignKey("posts.postId"))
     userId = Column(String, ForeignKey("users.userId"))
