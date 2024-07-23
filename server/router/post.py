@@ -20,6 +20,12 @@ def create_post(request: PostBase, db: Session = Depends(get_db)):
 def get_all_posts(db: Session = Depends(get_db)):
     return db_post.get_all(db)
 
-@router.get("/delete/{id}")
+# Delete post
+@router.get("/delete/{id}") #@router.delete("/{id}")
 def delete_post(id:int,db: Session = Depends(get_db)): # current_user: UserAuth = Depends(get_current_user)
     return db_post.delete(db,id) #get userid form jwt
+
+# Update a post
+@router.put("/{id}", response_model=PostDisplay) #  get userid form jwt
+def update_post(id: int, request: PostBase, db: Session = Depends(get_db)):
+    return  db_post.update(db, id, request)

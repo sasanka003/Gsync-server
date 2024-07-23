@@ -32,3 +32,19 @@ def delete(db: Session, id: int): # pass user_id: int
   db.delete(post)
   db.commit()
   return 'ok'
+
+def update(db: Session, id: int, request: PostBase):
+  post = db.query(DbPost).filter(DbPost.postid == id).first()
+  if not post:
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f'Post with id {id} not found')
+  if post.userId != request.userid:  # Ensure the user updating the post is the creator
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                        detail='Only post creator can update post')
+  post.title = request.title
+  post.description = request.description
+  post.image = request.image
+  post.dateshared = datetime.datetime.now()
+  db.commit()
+  db.refresh(post)
+  return post
