@@ -1,18 +1,17 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class PostBase(BaseModel):
-  title: str
-  description: str
-  image: str
-  userid: str #  get userid from jwt
+from database.db_post import PostType
+
 
 class PostDisplay(BaseModel):
   postid: int
   title: str
-  description: str
-  image: str
-  dateshared: datetime
-  userid: str
+  content: str
+  media: str
+  createdAt: datetime
+  userid: int
+  parentPostId:int
+  postType:PostType
   class Config():
     orm_mode = True

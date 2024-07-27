@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from database import models
 from database.database import engine, init_redis, redis_close
-from router import user, post
+from router import user, posts
 from fastapi.middleware.cors import CORSMiddleware
 
 
