@@ -14,16 +14,16 @@ post_tags = Table('postTags', Base.metadata,
 
 class DbUser(Base):
     __tablename__ = "profiles"
-    user_id = Column(UUID, primary_key=True, index=True, unique=True, autoincrement=False)
-    name = Column(Text, nullable=False)
-    email = Column(Text, unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), primary_key=True)
+    name = Column(Text, nullable=True)
+    email = Column(Text, nullable=False)
     image_url = Column(String, nullable=True)
     phone = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    posts = relationship("DbPost", back_populates="profiles")
-    comments = relationship("DbComment", back_populates="profiles")
-    votes = relationship("DbVote", back_populates="profiles")
-    plantations = relationship("DbPlantation", back_populates="profiles")
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    posts = relationship("DbPost", back_populates="user")
+    comments = relationship("DbComment", back_populates="user")
+    votes = relationship("DbVote", back_populates="user")
+    plantations = relationship("DbPlantation", back_populates="user")
 
 
 class DbPost(Base):
@@ -35,7 +35,7 @@ class DbPost(Base):
     post_type = Column(Enum('Question', 'Answer', name='post_types'))
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     parent_post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     user = relationship("DbUser", back_populates="posts")
     comments = relationship("DbComment", back_populates="post")
     votes = relationship("DbVote", back_populates="post")
@@ -97,8 +97,8 @@ class DbPlantation(Base):
     country = Column(Text, nullable=False, default="Srilanka")
     plantation_length = Column(Float, nullable=False)
     plantation_width = Column(Float, nullable=False)
-    subscription = Column(String, nullable=False)
+    subscription = Column(Enum('Basic', 'Gardener', 'Enterprise', name="subscription_types"), nullable=False, default="Basic")
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
-    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("profiles.user_id"), nullable=False)
     verified = Column(Boolean, default=False)
     user = relationship("DbUser", back_populates="plantations")

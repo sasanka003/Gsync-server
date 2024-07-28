@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from database import models
 from database.database import engine, init_redis, redis_close
-from router import user
+from router import user, plantations
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -18,6 +18,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
+app.include_router(plantations.router)
 
 
 @app.get('/')

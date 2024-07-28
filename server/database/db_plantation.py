@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database.models import DbPlantation
 from fastapi import status, HTTPException
+from enum import Enum
 
 
 class Location(BaseModel):
@@ -14,6 +15,12 @@ class Area(BaseModel):
     length: float
     width: float
 
+# create Enum for subscription
+class Subscription(str, Enum):
+    Basic = "Basic"
+    Gardener = "Gardener"
+    Enterprise = "Enterprise"
+
 
 class UserPlantation(BaseModel):
     user_id: uuid.UUID
@@ -21,6 +28,7 @@ class UserPlantation(BaseModel):
     type: str
     location: Location
     area: Area
+    subscription: Subscription
 
 
 
@@ -33,7 +41,8 @@ def create_plantation(db: Session, request: UserPlantation):
         province=request.location.province,
         country=request.location.region,
         plantation_length=request.area.length,
-        plantation_width=request.area.width
+        plantation_width=request.area.width,
+        subscription=request.subscription
     )
     db.add(new_plantation)
     db.commit()
