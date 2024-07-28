@@ -48,3 +48,10 @@ def delete_plantation(plantation_id: int, db: Session = Depends(get_db), token: 
     if plantation == 'ok':
         return {"message": "Plantation deleted successfully"}
     return status.HTTP_404_NOT_FOUND
+
+@router.put("/update/{plantation_id}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
+def update_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
+    plantation = db_plantation.update_plantation_status(db, plantation_id)
+    if plantation:
+        return {"message": "Plantation verified successfully"}
+    return status.HTTP_404_NOT_FOUND

@@ -36,6 +36,7 @@ class DbPost(Base):
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     parent_post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_updated = Column(DateTime, nullable=True)
     user = relationship("DbUser", back_populates="posts")
     comments = relationship("DbComment", back_populates="post")
     votes = relationship("DbVote", back_populates="post")
