@@ -28,8 +28,8 @@ class DbUser(Base):
 
 class DbPost(Base):
     __tablename__ = "posts"
-    post_id = Column(Integer, primary_key=True, index=True)
-    title = Column(Text, nullable=False)
+    post_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     media = Column(String, nullable=True)
     post_type = Column(Enum('Question', 'Answer', name='post_types'))

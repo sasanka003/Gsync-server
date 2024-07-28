@@ -1,41 +1,35 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import Optional
 
+from database import db_post
 from database.database import get_db
-from auth.authentication import verify_token
-from database.db_comment import CommentCreate
+from database.db_post import PostBase
+from schemas.post import PostDisplay
+from typing import List
+from auth.authentication import verify_token, get_current_user
 
 router = APIRouter(
-    prefix='/posts',
-    tags=['posts', 'comments']
+    prefix='/post',
+    tags=['post']
 )
 
+@router.post('',response_model=PostDisplay) #response_model=PostDisplay
+def create_post(request: PostBase, db: Session = Depends(get_db)): #token: dict = Depends(verify_token)
+    return db_post.create(db,request)
 
-@router.get('/{post_id}/comments', description='Get comments of a post when authorised or non-authoried', response_description="all comments of a post")
-def get_comments(post_id: int, db: Session = Depends(get_db), token: Optional[dict] = Depends(verify_token)):
+@router.get("/all",response_model=List[PostDisplay])
+def get_all_posts(db: Session = Depends(get_db)): #token: dict = Depends(verify_token)
+    return db_post.get_all(db)
 
-    if token:
-        pass
-    else:
-        pass
+# Delete post
+@router.get("/delete/{post_id}") #@router.delete("/{id}")
+def delete_post(post_id:int,db: Session = Depends(get_db),current_user: dict = Depends(get_current_user)):
+    return db_post.delete(db,post_id,current_user.user_id)
 
-
-@router.post('/{post_id}/comments', description='Create a comment', response_description="created comment & status", status_code=status.HTTP_201_CREATED)
-def create_comment(
-    post_id: int, 
-    comment: CommentCreate,
-    db: Session = Depends(get_db), 
-    token: dict = Depends(verify_token)
-):
-    pass
+# Update a post
+@router.put("/{post_id}", response_model=PostDisplay)
+def update_post(post_id: int, request: PostBase, db: Session = Depends(get_db),token: dict = Depends(verify_token)):
+    return  db_post.update(db, post_id, request)
 
 
-@router.put('/{post_id}/comments/{comment_id}', description='Edit a comment', response_description="Comment updated status")
-def update_comment(
-    post_id: int, 
-    comment_id: int, 
-    db: Session = Depends(get_db), 
-    token: dict = Depends(verify_token)
-):
-    pass
+
