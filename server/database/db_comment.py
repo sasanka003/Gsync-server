@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from datetime import datetime
 
 import pydantic
@@ -6,12 +7,16 @@ from rich import status
 from sqlalchemy.orm.session import Session
 from pydantic import BaseModel
 from database.models import DbComment, DbPost, DbUser
+=======
+from pydantic import BaseModel
+>>>>>>> main
 
 
 class CommentCreate(BaseModel):
     content: str
     user_id: int
     post_id: int
+<<<<<<< HEAD
 
 def create_comment(db: Session, request: CommentCreate):
 
@@ -65,3 +70,6 @@ def update_comment(comment_id: int, request: CommentCreate, db: Session):
 
 
 
+=======
+    
+>>>>>>> main

@@ -1,16 +1,21 @@
 from datetime import datetime
-
 from sqlalchemy.orm import relationship
 
 from database.database import Base
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Table, Text, Enum, UUID
+from sqlalchemy import Column, Enum, String, Float, DateTime, ForeignKey, Table, Text, UUID, Integer
+
+
+post_tags = Table('postTags', Base.metadata,
+    Column('post_id', Integer, ForeignKey('posts.post_id'), primary_key=True),
+    Column('tag_id', Integer, ForeignKey('tags.tag_id'), primary_key=True)
+)
 
 class DbUser(Base):
     __tablename__ = "profiles"
     user_id = Column(UUID, primary_key=True, index=True, unique=True, autoincrement=False)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
+    # password = Column(String, nullable=False)
     image_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     posts = relationship("DbPost", back_populates="profiles")
@@ -20,75 +25,75 @@ class DbUser(Base):
 
 class DbPost(Base):
     __tablename__ = "posts"
-    postId = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     media = Column(String, nullable=True)
-    postType = Column(Enum('Question', 'Answer', name='post_types'))
-    userId = Column(String, ForeignKey("profiles.userId"))
-    parentPostId = Column(Integer, ForeignKey("posts.postId"), nullable=True)
-    createdAt = Column(DateTime, default=DateTime.utcnow)
-    voteCount = Column(Integer, default=0)
-    user = relationship("DbUser", back_populates="posts")
-    comments = relationship("DbComment",back_populates="post")
+    post_type = Column(Enum('Question', 'Answer', name='post_types'))
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    parent_post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    profiles = relationship("DbUser", back_populates="posts")
+    comments = relationship("DbComment", back_populates="post")
     votes = relationship("DbVote", back_populates="post")
-    # tags = relationship("DbTag", secondary=post_tags, back_populates="posts")
+    tags = relationship("DbTag", secondary=post_tags, back_populates="posts")
+
 
 class DbComment(Base):
     __tablename__ = "comments"
-    commentId = Column(Integer, primary_key=True, index=True) #autoincremet ?
+    comment_id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
-    lastUpdated = Column(DateTime, nullable=True)
-    createdAt = Column(DateTime, default=datetime.utcnow)
-    postId = Column(Integer, ForeignKey("posts.postId"))
-    userId = Column(UUID, ForeignKey("profiles.userId"))
-    user = relationship("DbUser", secondary=comments_table,  back_populates="comments")
-    post = relationship("DbPost", secondary=comments_table, back_populates="comments")
-    # votes = relationship("DbVote", back_populates="comment")
+    last_updated = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    post_id = Column(Integer, ForeignKey("posts.post_id"))
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    profiles = relationship("DbUser", back_populates="comments")
+    post = relationship("DbPost", back_populates="comments")
+    votes = relationship("DbVote", back_populates="comment")
+
+
+class DbTag(Base):
+    __tablename__ = "tags"
+    tag_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    tag_name = Column(String, unique=True)
+    posts = relationship("DbPost", secondary=post_tags, back_populates="tags",)
+
+
+class DbContact(Base):
+    __tablename__ = "contact"
+    contact_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    organization = Column(String, nullable=True)
+    email = Column(String, nullable=False)
+    subject = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 
 class DbVote(Base):
     __tablename__ = "votes"
-    voteId = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    voteType = Column(Enum('Upvote', 'Downvote', name='vote_types'))
-    userId = Column(Integer, ForeignKey("profiles.userId"))
-    postId = Column(Integer, ForeignKey("posts.postId"))
-    createdAt = Column(DateTime, default=datetime.utcnow)
-    user = relationship("DbUser", back_populates="votes")
+    vote_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    vote_type = Column(Enum('Upvote', 'Downvote', name='vote_types'))
+    post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
+    comment_id = Column(Integer, ForeignKey("comments.comment_id"), nullable=True)
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    profiles = relationship("DbUser", back_populates="votes")
     post = relationship("DbPost", back_populates="votes")
+    comment = relationship("DbComment", back_populates="votes")
 
 
-
-# class DbUser(Base): #userId ?
-#     __tablename__ = "users"
-#     userName = Column(String, primary_key=True, index=True, unique=True, autoincrement=False)
-#     firstName = Column(String, nullable=False)
-#     lastName = Column(String, nullable=False)
-#     email = Column(String, unique=True, nullable=False)
-#     password = Column(String, nullable=False)
-#     createdAt = Column(DateTime, default=DateTime.utcnow)
-#     posts = relationship("DbPost", back_populates="user")
-#     comments = relationship("DbComment", secondary=comments_table,back_populates="user")
-#     votes = relationship("DbVote", secondary=votes_table,back_populates="user")
-
-
-# # Association table for the many-to-many relationship between users and posts through comments
-# comments_table = Table(
-#     'comments', Base.metadata,
-#     Column('voteId', Integer, ForeignKey('comments.voteId'), primary_key=True, index=True),
-#     Column('userId', Integer, ForeignKey('users.userId'),primary_key=True,index=True),
-#     Column('postId', Integer, ForeignKey('posts.postId'),primary_key=True,index=True),
-#     Column('content', Text, nullable=False),
-#     Column('lastUpdated', DateTime, nullable=True),
-#     Column('createdAt', DateTime, efault=datetime.utcnow)
-# )
-#
-# # Association table for the many-to-many relationship between users and posts through votes
-# votes_table = Table(
-#     'votes', Base.metadata,
-#     Column('commentId', Integer, ForeignKey('votes.voteId'), primary_key=True, index=True),
-#     Column('userId', Integer, ForeignKey('users.voteId'), primary_key=True, index=True),
-#     Column('postId', Integer, ForeignKey('posts.postId'), primary_key=True, index=True),
-#     Column('createdAt', DateTime, efault=datetime.utcnow),
-#     Column('voteType', Enum('Upvote', 'Downvote', name='vote_types'))
-#
-# )
+class DbPlantation(Base):
+    __tablename__ = "plantation"
+    plantation_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    province = Column(String)
+    country = Column(String, nullable=False, default="Srilanka")
+    plantation_length = Column(Float, nullable=False)
+    plantation_width = Column(Float, nullable=False)
+    subscription = Column(String, nullable=False)
+    createdAt = Column(DateTime, default=datetime.utcnow)
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    # profiles = relationship("DbUser", back_populates="plantations")

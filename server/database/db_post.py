@@ -1,30 +1,33 @@
 from typing import Optional
 
-from sqlalchemy import Enum
-
+from enum import Enum as PyEnum
 from sqlalchemy.orm.session import Session
 from database.models import DbPost, DbUser
 import datetime
 from pydantic import BaseModel
 from fastapi import HTTPException, status
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
+from enum import Enum
 
 class PostType(str, Enum):
-  question = "Question"
-  answer = "Answer"
+    question = "Question"
+    answer = "Answer"
 
 class PostBase(BaseModel):
   title: str
   content:str
   media: Optional[str] = None  # media is optional and, if not provided, its default value is None.
-  postType:PostType
-  userid: int #  get userid from jwt ?
-  parentPostId:Optional[int] = None
+  post_type:PostType
+  user_id: uuid.UUID
+  parent_post_id:Optional[int] = None
+
 
 def create(db: Session, request: PostBase):
 
   # Check if the user exists
-  user = db.query(DbUser).filter(DbUser.userId == request.userId).first()
+  user = db.query(DbUser).filter(DbUser.user_id == request.user_id).first()
   if not user:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
@@ -32,10 +35,10 @@ def create(db: Session, request: PostBase):
     title = request.title,
     content = request.content,
     media = request.media,
-    postType=request.postType,
-    userid=request.userid,
-    parentPostId=request.parentPostId,
-    createdAt=datetime.utcnow()
+    post_type=request.post_type,
+    user_id=request.user_id,
+    parent_post_id=request.parent_post_id,
+    # created_at=datetime.utcnow()
   )
   db.add(new_post)
   db.commit()
@@ -45,8 +48,8 @@ def create(db: Session, request: PostBase):
 def get_all(db: Session):
   return db.query(DbPost).all()
 
-def delete(db: Session, post_id: int,user_id: int): # pass user_id: int
-  post = db.query(DbPost).filter(DbPost.postid == post_id).first()
+def delete(db: Session, post_id: int,user_id: int):
+  post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
   if not post:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
   if post.userId != user_id:
@@ -59,7 +62,7 @@ def delete(db: Session, post_id: int,user_id: int): # pass user_id: int
 
 def update(db: Session, post_id: int, request: PostBase):
 
-  post = db.query(DbPost).filter(DbPost.postid == post_id).first()
+  post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
 
   if not post:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Post with id {post_id} not found')
