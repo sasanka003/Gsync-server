@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from sqlalchemy.orm import relationship
 
 from database.database import Base
@@ -12,12 +12,12 @@ post_tags = Table('post_tags', Base.metadata,
 
 class DbUser(Base):
     __tablename__ = "users"
-    userName = Column(String, primary_key=True, index=True, unique=True, autoincrement=False)
+    userId = Column(String, primary_key=True, index=True, unique=True, autoincrement=False)
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    createdAt = Column(DateTime, default=DateTime.utcnow)
+    createdAt = Column(DateTime, default=datetime.utcnow)
     posts = relationship("DbPost", back_populates="user")
     comments = relationship("DbComment", back_populates="user")
     votes = relationship("DbVote", back_populates="user")
@@ -32,7 +32,7 @@ class DbPost(Base):
     postType = Column(Enum('Question', 'Answer', name='post_types'))
     userId = Column(String, ForeignKey("users.userId"))
     parentPostId = Column(Integer, ForeignKey("posts.postId"), nullable=True)
-    createdAt = Column(DateTime, default=DateTime.utcnow)
+    createdAt = Column(DateTime, default=datetime.utcnow)
     user = relationship("DbUser", back_populates="posts")
     comments = relationship("DbComment", back_populates="post")
     votes = relationship("DbVote", back_populates="post")
