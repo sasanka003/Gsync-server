@@ -35,7 +35,8 @@ class DbPost(Base):
     post_type = Column(Enum('Question', 'Answer', name='post_types'))
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     parent_post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_updated = Column(DateTime, nullable=True)
     user = relationship("DbUser", back_populates="posts")
     comments = relationship("DbComment", back_populates="post")
     votes = relationship("DbVote", back_populates="post")
@@ -47,7 +48,7 @@ class DbComment(Base):
     comment_id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
     last_updated = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     post_id = Column(Integer, ForeignKey("posts.post_id"))
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     user = relationship("DbUser", back_populates="comments")
@@ -65,13 +66,14 @@ class DbTag(Base):
 class DbContact(Base):
     __tablename__ = "contact"
     contact_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    organization = Column(String, nullable=True)
-    email = Column(String, nullable=False)
+    first_name = Column(Text, nullable=False)
+    last_name = Column(Text, nullable=False)
+    organization = Column(Text, nullable=True)
+    email = Column(Text, nullable=False)
     subject = Column(String, nullable=False)
     message = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    checked = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class DbVote(Base):

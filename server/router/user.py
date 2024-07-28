@@ -10,11 +10,10 @@ router = APIRouter(
     tags=['user']
 )
 
-
-@router.post('', )
-def create_user(db: Session = Depends(get_db)):
-    return {"message": "User created successfully"}
-
 @router.get("/{user_id}")
 async def get_user_profile(user_id: str, db: Session = Depends(get_db), token: dict = Depends(verify_token)):
     return {"message": "User profile retrieved successfully"}
+
+@router.post("contact", description='send contact form', response_description="contact form submitted")
+async def contact_us():
+    return {"message": "Contact form submitted successfully"}
