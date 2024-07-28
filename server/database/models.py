@@ -4,17 +4,27 @@ from sqlalchemy.orm import relationship
 
 from database.database import Base
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Table, Text, Enum
-from sqlalchemy.sql import func
 
 # Association table for the many-to-many relationship between users and posts through comments
 comments_table = Table(
     'comments', Base.metadata,
-    Column('commentId', Integer, ForeignKey('comments.commentId'), primary_key=True, index=True),
+    Column('voteId', Integer, ForeignKey('comments.voteId'), primary_key=True, index=True),
     Column('userId', Integer, ForeignKey('users.userId'),primary_key=True,index=True),
     Column('postId', Integer, ForeignKey('posts.postId'),primary_key=True,index=True),
     Column('content', Text, nullable=False),
     Column('lastUpdated', DateTime, nullable=True),
     Column('createdAt', DateTime, efault=datetime.utcnow)
+)
+
+# Association table for the many-to-many relationship between users and posts through votes
+votes_table = Table(
+    'votes', Base.metadata,
+    Column('commentId', Integer, ForeignKey('votes.voteId'), primary_key=True, index=True),
+    Column('userId', Integer, ForeignKey('users.voteId'), primary_key=True, index=True),
+    Column('postId', Integer, ForeignKey('posts.postId'), primary_key=True, index=True),
+    Column('createdAt', DateTime, efault=datetime.utcnow),
+    Column('voteType', Enum('Upvote', 'Downvote', name='vote_types'))
+
 )
 
 class DbUser(Base): #userId ?
@@ -27,7 +37,7 @@ class DbUser(Base): #userId ?
     createdAt = Column(DateTime, default=DateTime.utcnow)
     posts = relationship("DbPost", back_populates="user")
     comments = relationship("DbComment", secondary=comments_table,back_populates="user")
-    # votes = relationship("DbVote", back_populates="user")
+    votes = relationship("DbVote", secondary=votes_table,back_populates="user")
 
 class DbPost(Base):
     __tablename__ = "posts"
@@ -39,9 +49,10 @@ class DbPost(Base):
     userId = Column(String, ForeignKey("users.userId"))
     parentPostId = Column(Integer, ForeignKey("posts.postId"), nullable=True)
     createdAt = Column(DateTime, default=DateTime.utcnow)
+    voteCount = Column(Integer, default=0)
     user = relationship("DbUser", back_populates="posts")
     comments = relationship("DbComment", secondary=comments_table,back_populates="post")
-    # votes = relationship("DbVote", back_populates="post")
+    votes = relationship("DbVote", secondary=votes_table, back_populates="post")
     # tags = relationship("DbTag", secondary=post_tags, back_populates="posts")
 
 class DbComment(Base):
@@ -56,34 +67,13 @@ class DbComment(Base):
     post = relationship("DbPost", secondary=comments_table, back_populates="comments")
     # votes = relationship("DbVote", back_populates="comment")
 
-# class DbUser(Base):
-#     __tablename__ = "users"
-#     userId = Column(Integer, primary_key=True, index=True)
-#     username = Column(String)
-#     email = Column(String, unique=True)
-#     password = Column(String)
-#     posts = relationship('DbPost', back_populates='user', cascade='all, delete, delete-orphan')
-#     comments = relationship('DbComment', back_populates='user', cascade='all, delete, delete-orphan')
+class DbVote(Base):
+    __tablename__ = "votes"
+    voteId = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    voteType = Column(Enum('Upvote', 'Downvote', name='vote_types'))
+    userId = Column(Integer, ForeignKey("users.userId"))
+    postId = Column(Integer, ForeignKey("posts.postId"))
+    createdAt = Column(DateTime, default=datetime.utcnow)
+    user = relationship("DbUser", secondary=votes_table, back_populates="votes")
+    post = relationship("DbPost", secondary=votes_table,  back_populates="votes")
 
-
-# class DbPost(Base):
-#     __tablename__ = "post"
-#     postid = Column(Integer, primary_key=True, index=True, autoincrement=True)
-#     title = Column(String)
-#     description = Column(String)
-#     image = Column(String)
-#     dateshared = Column(DateTime, default=func.now())
-#     userid = Column(String, ForeignKey('users.userId'))
-#     user = relationship('DbUser', back_populates='posts')
-#     comments = relationship('DbComment', back_populates='post', cascade='all, delete, delete-orphan')
-
-
-# class DbComment(Base):
-#     __tablename__ = 'comments'
-#     commentid = Column(Integer, primary_key=True, autoincrement=True)
-#     userid = Column(String, ForeignKey('users.userId'))
-#     postid = Column(Integer, ForeignKey('post.postid'))
-#     comment = Column(String)
-#     datecommented = Column(DateTime, default=func.now())
-#     user = relationship('DbUser', back_populates='comments')
-#     post = relationship('DbPost', back_populates='comments')

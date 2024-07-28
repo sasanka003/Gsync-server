@@ -24,7 +24,7 @@ def get_all_posts(db: Session = Depends(get_db),token: dict = Depends(verify_tok
 # Delete post
 @router.get("/delete/{post_id}") #@router.delete("/{id}")
 def delete_post(post_id:int,db: Session = Depends(get_db),token: dict = Depends(verify_token),current_user: UserAuth = Depends(get_current_user)): # current_user: UserAuth = Depends(get_current_user)
-    return db_post.delete(db,post_id,current_user.id) #get userid form jwt
+    return db_post.delete(db,post_id,current_user.userId) #get userid form jwt
 
 # Update a post
 @router.put("/{post_id}", response_model=PostDisplay) #  get userid form jwt
