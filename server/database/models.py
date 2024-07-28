@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import relationship
 
 from database.database import Base
-from sqlalchemy import Column, Enum, String, Integer, DateTime, ForeignKey, Table, Text, UUID
+from sqlalchemy import Column, Enum, String, Float, DateTime, ForeignKey, Table, Text, UUID, Integer
 
 
 post_tags = Table('postTags', Base.metadata,
@@ -92,7 +92,9 @@ class DbPlantation(Base):
     city = Column(String, nullable=False)
     province = Column(String)
     country = Column(String, nullable=False, default="Srilanka")
-    plantation_length = Column(Integer, nullable=False)
-    plantation_width = Column(Integer, nullable=False)
+    plantation_length = Column(Float, nullable=False)
+    plantation_width = Column(Float, nullable=False)
     subscription = Column(String, nullable=False)
     createdAt = Column(DateTime, default=datetime.utcnow)
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    user = relationship("DbUser", back_populates="plantations")
