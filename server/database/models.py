@@ -1,8 +1,10 @@
 from datetime import datetime
+from datetime import datetime
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from database.database import Base
-from sqlalchemy import Column, Enum, String, Float, DateTime, ForeignKey, Table, Text, UUID, Integer
+from sqlalchemy import Column, Enum, String, Float, DateTime, ForeignKey, Table, Text, UUID, Integer, Boolean
 
 
 post_tags = Table('postTags', Base.metadata,
@@ -12,15 +14,16 @@ post_tags = Table('postTags', Base.metadata,
 
 class DbUser(Base):
     __tablename__ = "profiles"
-    user_id = Column(UUID, primary_key=True, index=True, unique=True, autoincrement=False)
-    name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    # password = Column(String, nullable=False)
+    user_id = Column(UUID(as_uuid=True), primary_key=True)
+    name = Column(Text, nullable=True)
+    email = Column(Text, nullable=False)
     image_url = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    posts = relationship("DbPost", back_populates="profiles")
-    comments = relationship("DbComment", back_populates="profiles")
-    votes = relationship("DbVote", back_populates="profiles")
+    phone = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    posts = relationship("DbPost", back_populates="user")
+    comments = relationship("DbComment", back_populates="user")
+    votes = relationship("DbVote", back_populates="user")
+    plantations = relationship("DbPlantation", back_populates="user")
 
 
 class DbPost(Base):
@@ -33,7 +36,7 @@ class DbPost(Base):
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     parent_post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    profiles = relationship("DbUser", back_populates="posts")
+    user = relationship("DbUser", back_populates="posts")
     comments = relationship("DbComment", back_populates="post")
     votes = relationship("DbVote", back_populates="post")
     tags = relationship("DbTag", secondary=post_tags, back_populates="posts")
@@ -47,7 +50,7 @@ class DbComment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     post_id = Column(Integer, ForeignKey("posts.post_id"))
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
-    profiles = relationship("DbUser", back_populates="comments")
+    user = relationship("DbUser", back_populates="comments")
     post = relationship("DbPost", back_populates="comments")
     votes = relationship("DbVote", back_populates="comment")
 
@@ -78,7 +81,7 @@ class DbVote(Base):
     post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
     comment_id = Column(Integer, ForeignKey("comments.comment_id"), nullable=True)
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
-    profiles = relationship("DbUser", back_populates="votes")
+    user = relationship("DbUser", back_populates="votes")
     post = relationship("DbPost", back_populates="votes")
     comment = relationship("DbComment", back_populates="votes")
 
@@ -86,14 +89,15 @@ class DbVote(Base):
 class DbPlantation(Base):
     __tablename__ = "plantation"
     plantation_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, nullable=False)
+    name = Column(Text, nullable=False)
     type = Column(String, nullable=False)
-    city = Column(String, nullable=False)
-    province = Column(String)
-    country = Column(String, nullable=False, default="Srilanka")
+    city = Column(Text, nullable=False)
+    province = Column(Text)
+    country = Column(Text, nullable=False, default="Srilanka")
     plantation_length = Column(Float, nullable=False)
     plantation_width = Column(Float, nullable=False)
-    subscription = Column(String, nullable=False)
-    createdAt = Column(DateTime, default=datetime.utcnow)
-    user_id = Column(UUID, ForeignKey("profiles.user_id"))
-    # profiles = relationship("DbUser", back_populates="plantations")
+    subscription = Column(Enum('Basic', 'Gardener', 'Enterprise', name="subscription_types"), nullable=False, default="Basic")
+    createdAt = Column(DateTime(timezone=True), server_default=func.now())
+    user_id = Column(UUID(as_uuid=True), ForeignKey("profiles.user_id"), nullable=False)
+    verified = Column(Boolean, default=False)
+    user = relationship("DbUser", back_populates="plantations")
