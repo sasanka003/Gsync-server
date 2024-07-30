@@ -4,7 +4,8 @@ from contextlib import asynccontextmanager
 
 from database import models
 from database.database import engine, init_redis, redis_close
-from router import user, posts, plantations,login
+from router import user, posts, plantations,login, comments
+
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -21,6 +22,7 @@ app.include_router(login.router)
 app.include_router(user.router)
 app.include_router(posts.router)
 app.include_router(plantations.router)
+app.include_router(comments.router)
 
 
 @app.get('/')
