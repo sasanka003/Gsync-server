@@ -50,13 +50,14 @@ def create_plantation(db: Session, request: UserPlantation):
     return new_plantation
 
 
+def get_all_plantations(db: Session):
+    return db.query(DbPlantation).all()
+
 def get_plantation(db: Session, plantation_id: int):
     return db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
 
-
 def get_user_plantations(db: Session, user_id: int):
     return db.query(DbPlantation).filter(DbPlantation.user_id == user_id).all()
-
 
 def get_user_plantation_count(db: Session, user_id: int):
     return db.query(DbPlantation).filter(DbPlantation.user_id == user_id).count()
@@ -70,6 +71,7 @@ def delete_plantation(db: Session, plantation_id: int):
     db.delete(plantation)
     db.commit()
     return 'ok'
+
 
 def update_plantation_status(db: Session, plantation_id: int):
     plantation = db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
