@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import uuid
 
 class PlantationDisplay(BaseModel):
     plantation_id: int
@@ -10,6 +11,6 @@ class PlantationDisplay(BaseModel):
     plantation_length: float
     plantation_width: float
     verified: bool
-    user_id: str
+    user_id: uuid.UUID
     class Config:
         from_attributes = True

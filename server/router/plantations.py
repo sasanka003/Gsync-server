@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 import uuid
 
 from database.database import get_db
@@ -12,7 +12,7 @@ from schemas.plantation import PlantationDisplay
 
 router = APIRouter(
     prefix='/plantations',
-    tags=['plantation', 'gardener']
+    tags=['plantation']
 )
 
 
@@ -41,7 +41,7 @@ def get_user_plantations(user_id: uuid.UUID, db: Session = Depends(get_db), toke
 
 
 @router.delete("/delete/{plantation_id}", description='delete a plantation by id', response_description="plantation deleted", responses={404: {"description": "Plantation not found"}})
-def delete_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
+def delete_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(verify_token)):
     count = db_plantation.get_user_plantation_count(db, token)
     if count == 1:
         return {"message": "You can't delete your only plantation"}
@@ -55,16 +55,21 @@ def delete_plantation(plantation_id: int, db: Session = Depends(get_db), token: 
 
 
 @router.put("/update/{plantation_id}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
+def update_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(verify_token)):
     plantation = db_plantation.update_plantation_status(db, plantation_id)
     if plantation:
         return {"message": "Plantation verified successfully"}
     return status.HTTP_404_NOT_FOUND
 
 
-@router.get("/all", description='get all plantations', response_description="all plantations", response_model=PlantationDisplay, responses={404: {"description": "Plantations not found"}})
-def get_all_plantations(db: Session = Depends(get_db)):
+@router.get("/all", description='get all plantations', response_description="all plantations", response_model=List[PlantationDisplay], responses={404: {"description": "Plantations not found"}})
+def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
     plantations = db_plantation.get_all_plantations(db)
+
+    response = []
     if plantations:
-        return PlantationDisplay.model_validate(plantations)
+        for plantation in plantations:
+            response.append(PlantationDisplay.model_validate(plantation))
+        return response
+    
     return status.HTTP_404_NOT_FOUND
