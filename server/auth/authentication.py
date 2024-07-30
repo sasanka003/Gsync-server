@@ -32,7 +32,7 @@ async def get_current_user(token: dict = Depends(verify_token), db: Session = De
     user_id = token.get('sub')
     if user_id is None:
         raise HTTPException(status_code=400, detail="Invalid token payload")
-    user = db.query(DbUser).filter(DbUser.userName == user_id).first()
+    user = db.query(DbUser).filter(DbUser.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     

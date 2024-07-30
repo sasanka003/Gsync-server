@@ -1,20 +1,19 @@
-
 from datetime import datetime
 
-import pydantic
 from fastapi import HTTPException
 from rich import status
 from sqlalchemy.orm.session import Session
 from pydantic import BaseModel
 from database.models import DbComment, DbPost, DbUser
-from pydantic import BaseModel
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
+
 
 class CommentCreate(BaseModel):
     content: str
     user_id: uuid.UUID
     post_id: int
+
 
 def create_comment(db: Session, request: CommentCreate):
 
@@ -48,6 +47,7 @@ def get_comments(post_id: int, db: Session):
     comments = db.query(DbComment).filter(DbComment.post_id == post_id).all()
     return comments
 
+
 def update_comment(comment_id: int, request: CommentCreate, db: Session):
 
     # Retrieve the comment to update
@@ -75,6 +75,4 @@ def delete_comment(db: Session, comment_id: int, user_id: uuid.UUID):
     db.delete(comment)
     db.commit()
     return {"detail": "Comment deleted successfully"}
-
-
 
