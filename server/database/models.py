@@ -20,6 +20,8 @@ class DbUser(Base):
     image_url = Column(String, nullable=True)
     phone = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    status = Column(Enum('Verified', 'Pending', 'Disabled', name='profile_status'), nullable=False, default='Pending')
+    type = Column(Enum('SysAdmin', 'User', 'EnterpriseAdmin', 'EnterpriseUser', name='profile_types'), nullable=False, default='User')
     posts = relationship("DbPost", back_populates="user")
     comments = relationship("DbComment", back_populates="user")
     votes = relationship("DbVote", back_populates="user")
