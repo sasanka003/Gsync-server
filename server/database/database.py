@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
-from redis_om import get_redis_connection, HashModel
+from redis_om import get_redis_connection
 
 load_dotenv()
 

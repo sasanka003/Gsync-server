@@ -8,3 +8,4 @@ router = APIRouter(
     prefix='/votes',
     tag=['votes']
 )
+
