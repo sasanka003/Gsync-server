@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
-
+from typing import Optional
 from database import db_post
 from database.database import get_db
-from database.db_post import PostBase
+from database.db_post import PostBase, PostType
 from schemas.post import PostDisplay
 from typing import List
 from auth.authentication import verify_token, get_current_user
+import uuid
 
 router = APIRouter(
     prefix='/post',
@@ -14,8 +15,16 @@ router = APIRouter(
 )
 
 @router.post('',response_model=PostDisplay) #response_model=PostDisplay
-def create_post(request: PostBase, db: Session = Depends(get_db)): #token: dict = Depends(verify_token)
-    return db_post.create(db,request)
+async def create_post(
+    title: str = Form(...),
+    content: str = Form(...),
+    post_type: PostType = Form(...),
+    user_id: uuid.UUID = Form(...),
+    parent_post_id: Optional[int] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    return await db_post.create(db, title, content, post_type, user_id, parent_post_id, file)
 
 @router.get("/all",response_model=List[PostDisplay])
 def get_all_posts(db: Session = Depends(get_db)): #token: dict = Depends(verify_token)
@@ -30,6 +39,3 @@ def delete_post(post_id:int,db: Session = Depends(get_db),current_user: dict = D
 @router.put("/{post_id}", response_model=PostDisplay)
 def update_post(post_id: int, request: PostBase, db: Session = Depends(get_db),token: dict = Depends(verify_token)):
     return  db_post.update(db, post_id, request)
-
-
-

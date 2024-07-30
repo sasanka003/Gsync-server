@@ -1,49 +1,72 @@
 from typing import Optional
-
-from enum import Enum as PyEnum
+import os
+from supabase import create_client, Client
+from dotenv import load_dotenv
+from enum import Enum
 from sqlalchemy.orm.session import Session
 from database.models import DbPost, DbUser
 import datetime
 from pydantic import BaseModel
-from fastapi import HTTPException, status
-from sqlalchemy.dialects.postgresql import UUID
+from fastapi import HTTPException, status, UploadFile, File
 import uuid
-
-from enum import Enum
 
 class PostType(str, Enum):
     question = "Question"
     answer = "Answer"
 
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 class PostBase(BaseModel):
   title: str
   content:str
-  media: Optional[str] = None  # media is optional and, if not provided, its default value is None.
   post_type:PostType
   user_id: uuid.UUID
   parent_post_id:Optional[int] = None
 
 
-def create(db: Session, request: PostBase):
+async def create(db: Session, title: str, content: str, post_type: PostType, user_id: uuid.UUID, parent_post_id: Optional[int], file: Optional[UploadFile] = None):
+    # Check if the user exists
+    user = db.query(DbUser).filter(DbUser.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    
+    if post_type not in [PostType.question, PostType.answer]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid post type")
 
-  # Check if the user exists
-  user = db.query(DbUser).filter(DbUser.user_id == request.user_id).first()
-  if not user:
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    file_url = None
+    if file:
+        image_content = await file.read()
+        file_name = file.filename
 
-  new_post = DbPost(
-    title = request.title,
-    content = request.content,
-    media = request.media,
-    post_type=request.post_type,
-    user_id=request.user_id,
-    parent_post_id=request.parent_post_id,
-    # created_at=datetime.utcnow()
-  )
-  db.add(new_post)
-  db.commit()
-  db.refresh(new_post)
-  return new_post
+        response = supabase.storage.from_('post_img').upload(file_name, image_content)
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json())
+
+        # Extract the file URL from the response
+        file_url = response.json().get('Key')
+
+        if not file_url:
+            raise HTTPException(status_code=500, detail="Failed to retrieve file URL from the response")
+
+    new_post = DbPost(
+        title=title,
+        content=content,
+        media=file_url,
+        post_type=post_type,
+        user_id=user_id,
+        parent_post_id=parent_post_id,
+        created_at=datetime.datetime.utcnow()
+    )
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+    return new_post
 
 def get_all(db: Session):
   return db.query(DbPost).all()
