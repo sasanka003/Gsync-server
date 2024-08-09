@@ -6,6 +6,10 @@ from sqlalchemy.orm.session import Session
 from pydantic import BaseModel
 from database.models import DbComment, DbPost, DbUser
 from sqlalchemy.dialects.postgresql import UUID
+from redis_om import HashModel
+from redis_om import Field as RedisField
+from database import get_redis_client
+import pytz
 import uuid
 
 
@@ -13,6 +17,15 @@ class CommentCreate(BaseModel):
     content: str
     user_id: uuid.UUID
     post_id: int
+
+
+class CommentCache(HashModel):
+    post_id: int
+    comment_id: int
+    content: str
+    last_updated: datetime = datetime.now(pytz.utc)
+    class Meta:
+        database = get_redis_client()
 
 
 def create_comment(db: Session, request: CommentCreate):

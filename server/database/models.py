@@ -1,5 +1,4 @@
 from datetime import datetime
-from datetime import datetime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 

@@ -8,6 +8,10 @@ from database.models import DbPost, DbUser
 import datetime
 from pydantic import BaseModel
 from fastapi import HTTPException, status, UploadFile, File
+from redis_om import HashModel
+from redis_om import Field as RedisField
+from database import get_redis_client
+from datetime import datetime
 import uuid
 
 class PostType(str, Enum):
@@ -27,6 +31,17 @@ class PostBase(BaseModel):
   post_type:PostType
   user_id: uuid.UUID
   parent_post_id:Optional[int] = None
+
+
+class PostMetaCache(HashModel):
+    post_id: int = RedisField(index=True)
+    title: str
+    content: str
+    parent_post_id: Optional[int]
+    post_type: PostType
+    class Meta:
+        database = get_redis_client()
+
 
 
 async def create(db: Session, title: str, content: str, post_type: PostType, user_id: uuid.UUID, parent_post_id: Optional[int], file: Optional[UploadFile] = None):
