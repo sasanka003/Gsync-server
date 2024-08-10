@@ -8,7 +8,7 @@ from database.models import DbComment, DbPost, DbUser
 from sqlalchemy.dialects.postgresql import UUID
 from redis_om import HashModel
 from redis_om import Field as RedisField
-from database import get_redis_client
+from database.database import get_redis_client
 import pytz
 import uuid
 
@@ -58,6 +58,15 @@ def get_comments(post_id: int, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
     comments = db.query(DbComment).filter(DbComment.post_id == post_id).all()
+    return comments
+
+def get_top_comments(post_id: int, db: Session, limit: int = 10):
+    # Check if the post exists
+    post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    comments = db.query(DbComment).filter(DbComment.post_id == post_id).limit(limit).all()
     return comments
 
 

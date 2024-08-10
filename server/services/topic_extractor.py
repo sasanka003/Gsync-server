@@ -2,17 +2,34 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
-from collections import Counter
 from string import punctuation
+from database.database import get_db, redis
+from collections import Counter
 from redis import Redis
-from database.models import DbPost
+from database.db_post import get_trending_posts
 from sqlalchemy.orm import Session
+import logfire
 import json 
+import logfire
 
 
-nltk.download("punkt")
-nltk.download("stopwords")
-nltk.download("averaged_perceptron_tagger")
+logfire.configure(project_name='gsync')
+
+
+def download_resource(resource_name):
+    try:
+        nltk.data.find(f"tokenizers/{resource_name}")
+        logfire.info(f"{resource_name} is already downloaded.")
+    except LookupError:
+        logfire.info(f"{resource_name} not found. Downloading...")
+        nltk.download(resource_name)
+
+with logfire.span("Downloading resources"):
+    # Check and download the resources if necessary
+    download_resource("punkt")
+    download_resource("stopwords")
+    download_resource("averaged_perceptron_tagger")
+
 
 def extract_topic(text: str):
     stop_words = set(stopwords.words("english"))
@@ -26,7 +43,7 @@ def extract_topic(text: str):
     return topics
 
 def update_trending_topics(db: Session, redis: Redis):
-    recent_posts = db.query(DbPost.content, DbPost.title).order_by(DbPost.created_at.desc()).limit(100).all()
+    recent_posts = get_trending_posts(db)
     all_topics = []
     if recent_posts:
         for post in recent_posts:
@@ -47,5 +64,19 @@ def get_trending_topics(db: Session, redis: Redis):
         update_trending_topics(db)
         return json.loads(redis.get("trending_topics"))
 
+async def scheduled_update_trending_topics_helper(db: Session, redis: Redis):
+    try:
+        await update_trending_topics(db, redis)
+        logfire.info("Trending topics updated successfully")
+    except Exception as e:
+        logfire.exception(f"Error in updating trending topics: {e}")
+
 async def scheduled_update_trending_topics():
-    pass
+    db = next(get_db())
+    try:
+        await scheduled_update_trending_topics_helper(db, redis)
+        logfire.info("Trending topics updated successfully")
+    except Exception as e:
+        logfire.exception(f"Error in updating trending topics: {e}")
+    finally:
+        db.close()
