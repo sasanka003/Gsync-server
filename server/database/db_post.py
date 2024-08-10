@@ -3,16 +3,17 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from enum import Enum
+from sqlalchemy import func, desc, case
 from sqlalchemy.orm.session import Session
-from database.models import DbPost, DbUser
+from database.models import DbPost, DbUser, DbVote, DbTag, DbComment
+from database.database import get_redis_client
 import datetime
 from pydantic import BaseModel
 from fastapi import HTTPException, status, UploadFile, File
 from redis_om import HashModel
 from redis_om import Field as RedisField
-from database import get_redis_client
-from datetime import datetime
 import uuid
+
 
 class PostType(str, Enum):
     question = "Question"
@@ -86,6 +87,26 @@ async def create(db: Session, title: str, content: str, post_type: PostType, use
 def get_all(db: Session):
   return db.query(DbPost).all()
 
+
+def get_top_posts(db: Session, limit: int = 10, offset: int = 0):
+  return db.query(
+     DbPost,
+     func.count(case([(DbVote.vote_type == 'Upvote', 1)])).label('upvote_count'),
+      func.count(case([(DbVote.vote_type == 'Downvote', 1)])).label('downvote_count'),
+      func.count(DbComment.comment_id).label('comment_count')
+  ).outerjoin(
+      DbVote,
+      DbPost.post_id == DbVote.post_id
+  ).outerjoin(
+      DbComment,
+      DbPost.post_id == DbComment.post_id
+  ).group_by(
+      DbPost.post_id
+  ).order_by(
+      desc(func.count(DbVote.vote_id) + func.count(DbComment.comment_id))
+  ).limit(limit).offset(offset).all()
+
+
 def delete(db: Session, post_id: int,user_id: uuid.UUID):
   post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
   if not post:
@@ -123,3 +144,49 @@ def update(db: Session, post_id: int, request: PostBase):
   db.commit()
   db.refresh(post)
   return post
+
+
+def get_trending_posts(db: Session):
+  return  db.query(
+                    DbPost.content, 
+                    DbPost.title
+          ).order_by(DbPost.created_at.desc()).limit(100).all()
+
+def get_all_tags(db: Session, limit: int = 10):
+  return db.query(DbTag.tag_name).limit(limit).all()
+
+
+def filter_posts_by_tags(db: Session, tags: list, limit: int = 10, offset: int = 0):
+  tags = [tag.lower() for tag in tags]
+  return db.query(
+    DbPost
+  ).join(
+    DbTag,
+    DbPost.post_id == DbTag.post_id
+  ).filter(
+    DbTag.tag_name.in_(tags)
+  ).limit(limit).offset(offset).all()
+
+
+def filter_post_by_most_recent(db: Session, days: int = None, limit: int = 10, offset: int = 0):
+  posts = db.query(DbPost)
+
+  if days is not None:
+    posts = posts.filter(DbPost.created_at >= datetime.datetime.now() - datetime.timedelta(days=days))
+  
+  posts = posts.order_by(DbPost.created_at.desc()).limit(limit).offset(offset).all()
+  return posts
+
+
+def filter_post_by_votes(db: Session, limit: int = 10, vote_type: str = 'Upvote', offset: int = 0):
+  return db.query(
+    DbPost,
+    func.count(DbVote.vote_id).label('vote_count')
+  ).join(
+    DbVote,
+    (DbPost.post_id == DbVote.post_id) & (DbVote.vote_type == vote_type)
+  ).group_by(
+    DbPost.post_id
+  ).order_by(
+    desc('vote_count')
+  ).limit(limit).offset(offset).all()

@@ -16,3 +16,5 @@ nltk==3.8.1
 regex==2024.7.24
 apscheduler==3.10.4
 tzlocal==5.2
+logfire
+pytz

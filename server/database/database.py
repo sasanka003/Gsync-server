@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
 from redis_om import get_redis_connection
+import logfire 
 
 load_dotenv()
 
@@ -45,7 +46,7 @@ def init_redis():
         redis.ping()
         print("Successfully connected to Redis")
     except Exception as e:
-        print(f"Failed to connect to Redis: {e}")
+        logfire.error(f"Failed to connect to Redis: {e}")
         raise
 
     # create indexes for models

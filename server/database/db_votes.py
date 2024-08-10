@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from pydantic.types import UUID4
 from redis_om import HashModel
 from redis_om import Field as RedisField
-from database import get_redis_client
+from database.database import get_redis_client
 
 
 class VoteRequest(BaseModel):
