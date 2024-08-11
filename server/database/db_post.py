@@ -2,6 +2,7 @@ from typing import Optional
 import os
 from dotenv import load_dotenv
 from enum import Enum
+from sqlalchemy.orm import joinedload
 from sqlalchemy import func, desc, case
 from sqlalchemy.orm.session import Session
 from database.models import DbPost, DbUser, DbVote, DbTag, DbComment
@@ -83,20 +84,27 @@ def get_all(db: Session):
 
 def get_top_posts(db: Session, limit: int = 10, offset: int = 0):
   return db.query(
-     DbPost,
-     func.count(case([(DbVote.vote_type == 'Upvote', 1)])).label('upvote_count'),
-      func.count(case([(DbVote.vote_type == 'Downvote', 1)])).label('downvote_count'),
-      func.count(DbComment.comment_id).label('comment_count')
+    DbPost,
+    DbUser.name.label('user_name'),
+    func.count(case((DbVote.vote_type == 'Upvote', 1))).label('upvote_count'),
+    func.count(case((DbVote.vote_type == 'Downvote', 1))).label('downvote_count'),
+    func.count(DbComment.comment_id).label('comment_count')
   ).outerjoin(
-      DbVote,
-      DbPost.post_id == DbVote.post_id
+    DbVote,
+    DbPost.post_id == DbVote.post_id
   ).outerjoin(
-      DbComment,
-      DbPost.post_id == DbComment.post_id
+    DbComment,
+    DbPost.post_id == DbComment.post_id
+  ).outerjoin(
+    DbUser,
+    DbPost.user_id == DbUser.user_id
+  ).options(
+    joinedload(DbPost.tags)
   ).group_by(
-      DbPost.post_id
+    DbUser.name,
+    DbPost.post_id
   ).order_by(
-      desc(func.count(DbVote.vote_id) + func.count(DbComment.comment_id))
+    desc(func.count(DbVote.vote_id) + func.count(DbComment.comment_id))
   ).limit(limit).offset(offset).all()
 
 
@@ -152,17 +160,21 @@ def get_all_tags(db: Session, limit: int = 10):
 def filter_posts_by_tags(db: Session, tags: list, limit: int = 10, offset: int = 0):
   tags = [tag.lower() for tag in tags]
   return db.query(
-    DbPost
+    DbPost,
+    DbUser.name.label('user_name'),
   ).join(
     DbTag,
     DbPost.post_id == DbTag.post_id
+  ).outerjoin(
+       DbUser,
+        DbPost.user_id == DbUser.user_id
   ).filter(
     DbTag.tag_name.in_(tags)
   ).limit(limit).offset(offset).all()
 
 
 def filter_post_by_most_recent(db: Session, days: int = None, limit: int = 10, offset: int = 0):
-  posts = db.query(DbPost)
+  posts = db.query(DbPost, DbUser.name.label('user_name')).outerjoin(DbUser, DbPost.user_id == DbUser.user_id)
 
   if days is not None:
     posts = posts.filter(DbPost.created_at >= datetime.datetime.now() - datetime.timedelta(days=days))
@@ -174,10 +186,14 @@ def filter_post_by_most_recent(db: Session, days: int = None, limit: int = 10, o
 def filter_post_by_votes(db: Session, limit: int = 10, vote_type: str = 'Upvote', offset: int = 0):
   return db.query(
     DbPost,
+    DbUser.name.label('user_name'),
     func.count(DbVote.vote_id).label('vote_count')
   ).join(
     DbVote,
     (DbPost.post_id == DbVote.post_id) & (DbVote.vote_type == vote_type)
+  ).outerjoin(
+    DbUser,
+    DbPost.user_id == DbUser.user_id
   ).group_by(
     DbPost.post_id
   ).order_by(
