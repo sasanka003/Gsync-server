@@ -6,6 +6,10 @@ from sqlalchemy.orm.session import Session
 from pydantic import BaseModel
 from database.models import DbComment, DbPost, DbUser
 from sqlalchemy.dialects.postgresql import UUID
+from redis_om import HashModel
+from redis_om import Field as RedisField
+from database.database import get_redis_client
+import pytz
 import uuid
 
 
@@ -13,6 +17,15 @@ class CommentCreate(BaseModel):
     content: str
     user_id: uuid.UUID
     post_id: int
+
+
+class CommentCache(HashModel):
+    post_id: int
+    comment_id: int
+    content: str
+    last_updated: datetime = datetime.now(pytz.utc)
+    class Meta:
+        database = get_redis_client()
 
 
 def create_comment(db: Session, request: CommentCreate):
@@ -45,6 +58,15 @@ def get_comments(post_id: int, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
     comments = db.query(DbComment).filter(DbComment.post_id == post_id).all()
+    return comments
+
+def get_top_comments(post_id: int, db: Session, limit: int = 10):
+    # Check if the post exists
+    post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    comments = db.query(DbComment).filter(DbComment.post_id == post_id).limit(limit).all()
     return comments
 
 

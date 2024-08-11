@@ -1,10 +1,10 @@
 from datetime import datetime
-from datetime import datetime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from database.database import Base
 from sqlalchemy import Column, Enum, String, Float, DateTime, ForeignKey, Table, Text, UUID, Integer, Boolean
+from sqlalchemy.orm import validates
 
 
 post_tags = Table('postTags', Base.metadata,
@@ -17,7 +17,7 @@ class DbUser(Base):
     user_id = Column(UUID(as_uuid=True), primary_key=True)
     name = Column(Text, nullable=True)
     email = Column(Text, nullable=False)
-    image_url = Column(String, nullable=True)
+    image_url = Column(Text, nullable=True)
     phone = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     status = Column(Enum('Verified', 'Pending', 'Disabled', name='profile_status'), nullable=False, default='Pending')
@@ -33,7 +33,7 @@ class DbPost(Base):
     post_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
-    media = Column(String, nullable=True)
+    media = Column(Text, nullable=True)
     post_type = Column(Enum('Question', 'Answer', name='post_types'))
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     parent_post_id = Column(Integer, ForeignKey("posts.post_id"), nullable=True)
@@ -61,8 +61,15 @@ class DbComment(Base):
 class DbTag(Base):
     __tablename__ = "tags"
     tag_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    tag_name = Column(String, unique=True)
+    tag_name = Column(Text, unique=True)
     posts = relationship("DbPost", secondary=post_tags, back_populates="tags",)
+
+    @validates('tag_name')
+    def lowercase_tag_name(self, key, tag_name):
+        return tag_name.lower() if tag_name else None
+    
+    def __repr__(self):
+        return f"<Tag(tag_id={self.tag_id}, tag_name='{self.tag_name}')>"
 
 
 class DbContact(Base):
@@ -72,7 +79,7 @@ class DbContact(Base):
     last_name = Column(Text, nullable=False)
     organization = Column(Text, nullable=True)
     email = Column(Text, nullable=False)
-    subject = Column(String, nullable=False)
+    subject = Column(Text, nullable=False)
     message = Column(Text, nullable=False)
     checked = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
