@@ -1,12 +1,11 @@
 from typing import Optional
 import os
-from supabase import create_client, Client
 from dotenv import load_dotenv
 from enum import Enum
 from sqlalchemy import func, desc, case
 from sqlalchemy.orm.session import Session
 from database.models import DbPost, DbUser, DbVote, DbTag, DbComment
-from database.database import get_redis_client
+from database.database import get_redis_client, supabase
 import datetime
 from pydantic import BaseModel
 from fastapi import HTTPException, status, UploadFile, File
@@ -19,12 +18,6 @@ class PostType(str, Enum):
     question = "Question"
     answer = "Answer"
 
-load_dotenv()
-
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class PostBase(BaseModel):
   title: str
