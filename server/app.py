@@ -27,7 +27,6 @@ scheduler.add_job(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     models.Base.metadata.create_all(bind=engine)
-    logfire.instrument_sqlalchemy(engine=engine)
     scheduler.start()
     init_redis()
     yield
@@ -37,6 +36,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 logfire.instrument_fastapi(app)
+# logfire.instrument_sqlalchemy(engine=engine)
 app.include_router(login.router)
 app.include_router(user.router)
 app.include_router(posts.router)

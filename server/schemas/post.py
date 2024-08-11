@@ -15,6 +15,12 @@ class PostDisplay(BaseModel):
   created_at: datetime
   user_id: uuid.UUID
   parent_post_id: Optional[int] = None
-  post_type:PostType
+  post_type: PostType
+  last_updated: Optional[datetime] = None
+  tag: list[str] = []
+  user_name: str
+  upvote_count: int = 0
+  downvote_count: int = 0
+  comment_count: int = 0
   class Config:
     from_attributes = True
