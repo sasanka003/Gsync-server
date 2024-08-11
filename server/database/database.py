@@ -4,11 +4,17 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
 from redis_om import get_redis_connection
+from supabase import create_client, Client
 import logfire 
 
 load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.getenv("POSTGRES_URL")
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
