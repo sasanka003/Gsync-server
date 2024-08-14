@@ -48,4 +48,4 @@ def delete_comment(
         db: Session = Depends(get_db),
         current_user: dict = Depends(get_current_user)
 ):
-    return db_comment.delete_comment(db,comment_id,user_id,current_user.user_id)
+    return db_comment.delete_comment(db,comment_id, comment_id, current_user.user_id)

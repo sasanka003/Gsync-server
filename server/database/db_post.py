@@ -154,6 +154,7 @@ def get_trending_posts(db: Session):
                     DbPost.title
           ).order_by(DbPost.created_at.desc()).limit(100).all()
 
+
 def get_all_tags(db: Session, limit: int = 10):
   return db.query(DbTag.tag_name).limit(limit).all()
 
