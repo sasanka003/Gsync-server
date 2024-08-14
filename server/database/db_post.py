@@ -104,7 +104,8 @@ def get_top_posts(db: Session, limit: int = 10, offset: int = 0):
     DbUser.name,
     DbPost.post_id
   ).order_by(
-    desc(func.count(DbVote.vote_id) + func.count(DbComment.comment_id))
+    desc(func.count(DbVote.vote_id) + func.count(DbComment.comment_id)), 
+    desc(DbPost.created_at)
   ).limit(limit).offset(offset).all()
 
 
