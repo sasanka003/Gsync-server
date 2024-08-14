@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import Optional
 from database import db_post
@@ -31,7 +31,7 @@ def get_all_posts(db: Session = Depends(get_db)): #token: dict = Depends(verify_
     return db_post.get_all(db)
 
 # Delete post
-@router.get("/delete/{post_id}") #@router.delete("/{id}")
+@router.delete("/delete/{post_id}") #@router.delete("/{id}")
 def delete_post(post_id:int,db: Session = Depends(get_db),current_user: dict = Depends(get_current_user)):
     return db_post.delete(db,post_id,current_user.user_id)
 
@@ -42,9 +42,12 @@ def update_post(post_id: int, request: PostBase, db: Session = Depends(get_db),t
 
 
 # Get a post
-@router.get("/top/{offset}", response_model=List[PostDisplay])
-def get_top_posts(offset: int = 0, db: Session = Depends(get_db)):
-    top_posts = db_post.get_top_posts(db, offset=offset)
+@router.get("/top/", response_model=List[PostDisplay])
+def get_top_posts(
+    limit: int = Query(10, gt=1, le=100, description="post limit per req."), 
+    offset: int = Query(0, ge=0, description="post offset in current request."), 
+    db: Session = Depends(get_db)):
+    top_posts = db_post.get_top_posts(db, limit=limit, offset=offset)
     return [
         PostDisplay(
             **post.__dict__,
