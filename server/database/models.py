@@ -112,3 +112,12 @@ class DbPlantation(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("profiles.user_id"), nullable=False)
     verified = Column(Boolean, default=False)
     user = relationship("DbUser", back_populates="plantations")
+    statuses = relationship("DbPlantationStatus", back_populates="plantation")
+
+class DbPlantationStatus(Base):
+    __tablename__ = "plantation_statuses"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    plantation_id = Column(Integer, ForeignKey('plantation.plantation_id'), nullable=False)
+    status = Column(Enum('Unapproved', 'Approved', 'Declined', name="plantation_status_types"), nullable=False, default='Unapproved')
+    updated_at = Column(DateTime(timezone=True), server_default=func.now())
+    plantation = relationship("DbPlantation", back_populates="statuses")
