@@ -40,8 +40,8 @@ class DbPost(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_updated = Column(DateTime(timezone=True), nullable=True)
     user = relationship("DbUser", back_populates="posts")
-    comments = relationship("DbComment", back_populates="post")
-    votes = relationship("DbVote", back_populates="post")
+    comments = relationship("DbComment", back_populates="post", cascade="all, delete-orphan")
+    votes = relationship("DbVote", back_populates="post", cascade="all, delete-orphan")
     tags = relationship("DbTag", secondary=post_tags, back_populates="posts")
 
 
