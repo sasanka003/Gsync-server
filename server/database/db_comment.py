@@ -60,13 +60,13 @@ def get_comments(post_id: int, db: Session):
     comments = db.query(DbComment).filter(DbComment.post_id == post_id).all()
     return comments
 
-def get_top_comments(post_id: int, db: Session, limit: int = 10):
+def get_top_comments(post_id: int, db: Session, limit: int = 10, offset: int = 0):
     # Check if the post exists
     post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
-    comments = db.query(DbComment).filter(DbComment.post_id == post_id).limit(limit).all()
+    comments = db.query(DbComment).filter(DbComment.post_id == post_id).limit(limit).offset(offset).all()
     return comments
 
 

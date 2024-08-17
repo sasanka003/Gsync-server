@@ -2,9 +2,10 @@ from typing import Optional
 import os
 from dotenv import load_dotenv
 from enum import Enum
+from sqlalchemy.orm import joinedload
 from sqlalchemy import func, desc, case
 from sqlalchemy.orm.session import Session
-from database.models import DbPost, DbUser, DbVote, DbTag, DbComment
+from database.models import DbPost, DbUser, DbVote, DbTag, DbComment, post_tags
 from database.database import get_redis_client, supabase
 import datetime
 from pydantic import BaseModel
@@ -81,22 +82,37 @@ def get_all(db: Session):
   return db.query(DbPost).all()
 
 
-def get_top_posts(db: Session, limit: int = 10, offset: int = 0):
-  return db.query(
-     DbPost,
-     func.count(case([(DbVote.vote_type == 'Upvote', 1)])).label('upvote_count'),
-      func.count(case([(DbVote.vote_type == 'Downvote', 1)])).label('downvote_count'),
-      func.count(DbComment.comment_id).label('comment_count')
+def get_top_posts_query(db: Session):
+   return db.query(
+    DbPost,
+    DbUser.name.label('user_name'),
+    func.count(case((DbVote.vote_type == 'Upvote', 1))).label('upvote_count'),
+    func.count(case((DbVote.vote_type == 'Downvote', 1))).label('downvote_count'),
+    func.count(DbComment.comment_id).label('comment_count')
   ).outerjoin(
-      DbVote,
-      DbPost.post_id == DbVote.post_id
+    DbVote,
+    DbPost.post_id == DbVote.post_id
   ).outerjoin(
-      DbComment,
-      DbPost.post_id == DbComment.post_id
+    DbComment,
+    DbPost.post_id == DbComment.post_id
+  ).outerjoin(
+    DbUser,
+    DbPost.user_id == DbUser.user_id
+  ).outerjoin(
+    DbTag, 
+    post_tags.c.tag_id == DbTag.tag_id
+  ).options(
+    joinedload(DbPost.tags)
   ).group_by(
-      DbPost.post_id
-  ).order_by(
-      desc(func.count(DbVote.vote_id) + func.count(DbComment.comment_id))
+    DbUser.name,
+    DbPost.post_id
+  )
+
+
+def get_top_posts(db: Session, limit: int = 10, offset: int = 0):
+  return get_top_posts_query(db).order_by(
+    desc(func.count(DbVote.vote_id) + func.count(DbComment.comment_id)), 
+    desc(DbPost.created_at)
   ).limit(limit).offset(offset).all()
 
 
@@ -110,6 +126,7 @@ def delete(db: Session, post_id: int,user_id: uuid.UUID):
   db.delete(post)
   db.commit()
   return {"detail": "Post deleted successfully"}
+
 
 def update(db: Session, post_id: int, request: PostBase):
 
@@ -145,24 +162,20 @@ def get_trending_posts(db: Session):
                     DbPost.title
           ).order_by(DbPost.created_at.desc()).limit(100).all()
 
+
 def get_all_tags(db: Session, limit: int = 10):
   return db.query(DbTag.tag_name).limit(limit).all()
 
 
 def filter_posts_by_tags(db: Session, tags: list, limit: int = 10, offset: int = 0):
   tags = [tag.lower() for tag in tags]
-  return db.query(
-    DbPost
-  ).join(
-    DbTag,
-    DbPost.post_id == DbTag.post_id
-  ).filter(
+  return get_top_posts_query(db).filter(
     DbTag.tag_name.in_(tags)
   ).limit(limit).offset(offset).all()
 
 
 def filter_post_by_most_recent(db: Session, days: int = None, limit: int = 10, offset: int = 0):
-  posts = db.query(DbPost)
+  posts = get_top_posts_query(db)
 
   if days is not None:
     posts = posts.filter(DbPost.created_at >= datetime.datetime.now() - datetime.timedelta(days=days))
@@ -174,11 +187,26 @@ def filter_post_by_most_recent(db: Session, days: int = None, limit: int = 10, o
 def filter_post_by_votes(db: Session, limit: int = 10, vote_type: str = 'Upvote', offset: int = 0):
   return db.query(
     DbPost,
-    func.count(DbVote.vote_id).label('vote_count')
-  ).join(
+    DbUser.name.label('user_name'),
+    func.count(case((DbVote.vote_type == 'Upvote', 1))).label('upvote_count'),
+    func.count(case((DbVote.vote_type == 'Downvote', 1))).label('downvote_count'),
+    func.count(DbComment.comment_id).label('comment_count')
+  ).outerjoin(
     DbVote,
     (DbPost.post_id == DbVote.post_id) & (DbVote.vote_type == vote_type)
+  ).outerjoin(
+    DbComment,
+    DbPost.post_id == DbComment.post_id
+  ).outerjoin(
+    DbUser,
+    DbPost.user_id == DbUser.user_id
+  ).outerjoin(
+      DbTag, 
+      post_tags.c.tag_id == DbTag.tag_id
+  ).options(
+    joinedload(DbPost.tags)
   ).group_by(
+    DbUser.name,
     DbPost.post_id
   ).order_by(
     desc('vote_count')
