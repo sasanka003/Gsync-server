@@ -32,7 +32,7 @@ def get_all_posts(db: Session = Depends(get_db)): #token: dict = Depends(verify_
 
 # Delete post
 @router.delete("/delete/{post_id}") #@router.delete("/{id}")
-def delete_post(post_id:int,db: Session = Depends(get_db),current_user: dict = Depends(get_current_user)):
+def delete_post(post_id:int, db: Session = Depends(get_db),current_user: dict = Depends(get_current_user)):
     return db_post.delete(db,post_id,current_user.user_id)
 
 # Update a post

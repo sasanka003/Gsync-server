@@ -1,5 +1,5 @@
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from database.models import DbContact
 from fastapi import status, HTTPException
@@ -9,7 +9,7 @@ class ContactData(BaseModel):
     first_name: str
     last_name: str
     organization: str
-    email: str
+    email: EmailStr
     subject: str
     message: str
 
