@@ -13,7 +13,10 @@ def get_all_gardeners(db: Session, page:int, page_size:int):
     return gardeners
 
 def get_all_plantations(db: Session):
-    return db.query(DbPlantation).all()
+
+    result = db.query(DbPlantation.plantation_id, DbPlantation.type, DbPlantation.user_id, DbPlantation.city, DbPlantation.createdAt, DbPlantationStatus.status) \
+        .join(DbPlantationStatus,DbPlantation.plantation_id == DbPlantationStatus.plantation_id).all()
+    return result
 
 
 def update_plantation_status(db: Session, plantation_id: int, status: str):
