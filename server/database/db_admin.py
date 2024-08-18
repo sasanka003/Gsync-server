@@ -2,6 +2,8 @@ from database.models import DbUser, DbPlantation, DbPlantationStatus
 from sqlalchemy.orm import Session
 from fastapi import status, HTTPException
 from sqlalchemy import asc,func
+import uuid
+
 
 
 def get_all_gardeners(db: Session, page:int, page_size:int):
@@ -11,6 +13,16 @@ def get_all_gardeners(db: Session, page:int, page_size:int):
     gardeners = db.query(DbUser).filter(DbUser.type == 'User').order_by(asc(DbUser.created_at)).offset(offset).limit(page_size).all()
 
     return gardeners
+
+def delete_gardener(db: Session,user_id: uuid.UUID):
+    gardener = db.query(DbUser).filter(DbUser.user_id == user_id).first()
+    if not gardener:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardener not found")
+
+    db.delete(gardener)
+    db.commit()
+    return 'ok'
+
 
 def get_all_plantations(db: Session):
 
