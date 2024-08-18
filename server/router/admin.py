@@ -24,7 +24,7 @@ def get_all_gardeners(page: int = Query(1, ge=1), page_size: int = Query(10, ge=
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardeneres not found")
 
 @router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationDisplay], responses={404: {"description": "Plantations not found"}})
-def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
+def get_all_plantations(db: Session = Depends(get_db)): #token: dict = Depends(get_current_user)
     plantations = db_admin.get_all_plantations(db)
 
     response = []

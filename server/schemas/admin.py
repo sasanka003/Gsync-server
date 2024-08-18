@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import uuid
+from datetime import datetime
 
 class GradenersDisplay(BaseModel):
     user_id: uuid.UUID
@@ -13,6 +14,8 @@ class PlantationDisplay(BaseModel):
     plantation_id: int
     type:str
     user_id: uuid.UUID
-    city: str # address
-    createdAt:str
+    city: str # location
+    createdAt:datetime
     status: str
+    class Config:
+        from_attributes = True
