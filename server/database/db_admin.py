@@ -3,6 +3,14 @@ from sqlalchemy.orm import Session
 from fastapi import status, HTTPException
 from sqlalchemy import asc,func
 import uuid
+from pydantic import BaseModel
+
+
+class EditGardener(BaseModel):
+    name:str
+    email:str
+    #address
+    phone:str
 
 
 
@@ -23,6 +31,19 @@ def delete_gardener(db: Session,user_id: uuid.UUID):
     db.commit()
     return 'ok'
 
+def edit_gardener(db: Session, user_id: uuid.UUID, request:EditGardener):
+    gardener = db.query(DbUser).filter(DbUser.user_id == user_id).first()
+    if not gardener:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardener not found")
+
+    gardener.name = request.name
+    gardener.email = request.email
+    gardener.phone = request.phone
+
+    db.commit()
+    db.refresh(gardener)
+
+    return gardener
 
 def get_all_plantations(db: Session):
 
