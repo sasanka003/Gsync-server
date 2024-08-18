@@ -36,7 +36,7 @@ def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(get
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
 
 @router.put("/plantations/{plantation_id}/{status}", description='update plantation status', response_description="plantation status updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation_status(plantation_id: int, status: str, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
+def update_plantation_status(plantation_id: int, status: str, db: Session = Depends(get_db)): #token: dict = Depends(get_current_user)
     if status not in ['Unapproved', 'Approved', 'Declined']:
         raise HTTPException(status_code=400, detail="Invalid status")
 
