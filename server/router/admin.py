@@ -5,6 +5,8 @@ from database import db_admin, db_plantation
 from schemas.admin import GradenersDisplay, PlantationDisplay
 from auth.authentication import verify_token, get_current_user
 from sqlalchemy.orm import Session
+import uuid
+
 
 router = APIRouter(
     prefix='/admin',
@@ -21,7 +23,15 @@ def get_all_gardeners(page: int = Query(1, ge=1), page_size: int = Query(10, ge=
             response.append(GradenersDisplay.model_validate(gardener))
         return response
 
-    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardeneres not found")
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardeners not found")
+
+@router.delete("/gardener/{user_id}", description='delete a gardner', response_description="gardner deleted",responses={404: {"description": "Gardner not found"}})
+def remove_gardener(user_id:uuid.UUID, db: Session = Depends(get_db)): #token: dict = Depends(get_current_user)
+    gardener = db_admin.delete_gardener(db,user_id)
+    if gardener == 'ok':
+        return {"message": "Gardener deleted successfully"}
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardener not found")
+
 
 @router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationDisplay], responses={404: {"description": "Plantations not found"}})
 def get_all_plantations(db: Session = Depends(get_db)): #token: dict = Depends(get_current_user)
