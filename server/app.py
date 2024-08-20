@@ -7,7 +7,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from database import models
 from database.database import engine, init_redis, redis_close
 from services.topic_extractor import scheduled_update_trending_topics
-from router import user, posts, plantations,login, comments
+from router import user, posts, plantations,login, comments, admin
 from fastapi.middleware.cors import CORSMiddleware
 import logfire
 
@@ -42,6 +42,7 @@ app.include_router(user.router)
 app.include_router(posts.router)
 app.include_router(plantations.router)
 app.include_router(comments.router)
+app.include_router(admin.router)
 
 
 @app.get('/')
