@@ -39,7 +39,7 @@ class PostMetaCache(HashModel):
 
 
 
-async def create(db: Session, title: str, content: str, post_type: PostType, user_id: uuid.UUID, parent_post_id: Optional[int], file: Optional[UploadFile] = None):
+async def create(db: Session, title: str, content: str, post_type: PostType, user_id: uuid.UUID, parent_post_id: Optional[int] = None, file: Optional[UploadFile] = None):
     # Check if the user exists
     user = db.query(DbUser).filter(DbUser.user_id == user_id).first()
     if not user:
