@@ -2,7 +2,7 @@ from pydantic import BaseModel
 import uuid
 from datetime import datetime
 
-class GradenersDisplay(BaseModel):
+class GardenersDisplay(BaseModel):
     user_id: uuid.UUID
     name: str
     email: str
