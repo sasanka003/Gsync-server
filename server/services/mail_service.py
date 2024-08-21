@@ -15,7 +15,7 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS=False,
     MAIL_STARTTLS=False,
     USE_CREDENTIALS = True,
-    TEMPLATE_FOLDER="server/templates"
+    TEMPLATE_FOLDER="templates"
 )
 
 fm = FastMail(conf)

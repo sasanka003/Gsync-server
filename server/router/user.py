@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from database.database import get_db
 from database import db_user
 from auth.authentication import verify_token
-from server.database.db_contact import ContactData
+from database.db_contact import ContactData
 from services.mail_service import fm, MAIL_TO
 
 
