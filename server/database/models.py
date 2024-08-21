@@ -25,8 +25,14 @@ class DbUser(Base):
     posts = relationship("DbPost", back_populates="user")
     comments = relationship("DbComment", back_populates="user")
     votes = relationship("DbVote", back_populates="user")
-    plantations = relationship("DbPlantation", back_populates="user")
+    plantations = relationship("DbPlantation", back_populates="user", foreign_keys="[DbPlantation.user_id]")
 
+class DbEnterpriseUser(Base):
+    __tablename__ = "enterprise_users"
+    user_id = Column(UUID(as_uuid=True), ForeignKey("profiles.user_id", ondelete="CASCADE"), primary_key=True)
+    admin_id = Column(UUID(as_uuid=True), ForeignKey("profiles.user_id", ondelete="CASCADE"), nullable=False)
+    admin = relationship("DbUser", back_populates="enterprise_users", cascade="all, delete-orphan", foreign_keys=[admin_id])
+    plantation_access = relationship("DbPlantationAccess", back_populates="user", cascade="all, delete-orphan")
 
 class DbPost(Base):
     __tablename__ = "posts"
@@ -113,6 +119,7 @@ class DbPlantation(Base):
     verified = Column(Boolean, default=False)
     user = relationship("DbUser", back_populates="plantations")
     statuses = relationship("DbPlantationStatus", back_populates="plantation")
+    user_access = relationship("DbPlantationAccess", back_populates="plantation", cascade="all, delete-orphan")
 
 class DbPlantationStatus(Base):
     __tablename__ = "plantation_statuses"
@@ -121,3 +128,12 @@ class DbPlantationStatus(Base):
     status = Column(Enum('Unapproved', 'Approved', 'Declined', name="plantation_status_types"), nullable=False, default='Unapproved')
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
     plantation = relationship("DbPlantation", back_populates="statuses")
+
+
+class DbPlantationAccess(Base):
+    __tablename__ = "plantation_access"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("enterprise_users.user_id", ondelete="CASCADE"), nullable=False)
+    plantation_id = Column(Integer, ForeignKey("plantation.plantation_id", ondelete="CASCADE"), nullable=False)
+    user = relationship("DbEnterpriseUser", back_populates="plantation_access", cascade="all, delete-orphan")
+    plantation = relationship("DbPlantation", back_populates="user_access")

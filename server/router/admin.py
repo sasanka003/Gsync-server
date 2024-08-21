@@ -2,25 +2,25 @@ from fastapi import APIRouter, Depends, status,Query,HTTPException
 from typing import Optional, List
 from database.database import get_db
 from database import db_admin, db_plantation
-from schemas.admin import GradenersDisplay, PlantationDisplay
+from schemas.admin import GardenersDisplay, PlantationDisplay
 from auth.authentication import verify_token, get_current_user
 from sqlalchemy.orm import Session
 import uuid
 from database.db_admin import EditGardener
 
 router = APIRouter(
-    prefix='/admin',
-    tags=['admin']
+    prefix='/main/admin',
+    tags=['admin', 'system']
 )
 
-@router.get("/gardeners/", description='get all gardeners', response_description="all gardeners", response_model=List[GradenersDisplay], responses={404: {"description": "Gardeners not found"}})
+@router.get("/gardeners/", description='get all gardeners', response_description="all gardeners", response_model=List[GardenersDisplay], responses={404: {"description": "Gardeners not found"}})
 def get_all_gardeners(page: int = Query(1, ge=1), page_size: int = Query(10, ge=1),db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
     gardeners = db_admin.get_all_gardeners(db, page,page_size)
 
     response = []
     if gardeners:
         for gardener in gardeners:
-            response.append(GradenersDisplay.model_validate(gardener))
+            response.append(GardenersDisplay.model_validate(gardener))
         return response
 
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardeners not found")
