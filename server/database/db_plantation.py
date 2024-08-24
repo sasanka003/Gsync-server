@@ -1,4 +1,4 @@
-import uuid
+from pydantic.types import UUID
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database.models import DbPlantation
@@ -23,7 +23,7 @@ class Subscription(str, Enum):
 
 
 class UserPlantation(BaseModel):
-    user_id: uuid.UUID
+    user_id: UUID
     name: str
     type: str
     location: Location
