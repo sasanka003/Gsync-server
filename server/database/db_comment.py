@@ -10,12 +10,12 @@ from redis_om import HashModel
 from redis_om import Field as RedisField
 from database.database import get_redis_client
 import pytz
-import uuid
+from pydantic.types import UUID
 
 
 class CommentCreate(BaseModel):
     content: str
-    user_id: uuid.UUID
+    user_id: UUID
     post_id: int
 
 
@@ -85,7 +85,7 @@ def update_comment(comment_id: int, request: CommentCreate, db: Session):
 
     return comment
 
-def delete_comment(db: Session, comment_id: int, user_id: uuid.UUID):
+def delete_comment(db: Session, comment_id: int, user_id: UUID):
     comment = db.query(DbComment).filter(DbComment.comment_id == comment_id).first()
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")

@@ -24,3 +24,14 @@ class PostDisplay(BaseModel):
   comment_count: int = 0
   class Config:
     from_attributes = True
+
+class PostCreateDisplay(BaseModel):
+  title: str
+  content: str
+  media: Optional[str] = None
+  post_type: PostType
+  user_id: uuid.UUID
+  parent_post_id: Optional[int] = None
+  tag: list[str] = []
+  class Config:
+    from_attributes = True
