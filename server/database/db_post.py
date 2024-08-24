@@ -119,12 +119,17 @@ def get_top_posts(db: Session, limit: int = 10, offset: int = 0):
   ).limit(limit).offset(offset).all()
 
 
-def delete(db: Session, post_id: int,user_id: UUID):
+def delete(db: Session, post_id: int, user_id: UUID):
   post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
+
   if not post:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-  if str(post.userId) != str(user_id):
+  if post.user_id != user_id:
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only post creator can delete post')
+  if post.media:
+    response = supabase.storage.from_('post_img').remove(post.media)
+    if response.status_code != 200:
+      raise HTTPException(status_code=response.status_code, detail="Error removing media from storage")
 
   db.delete(post)
   db.commit()
@@ -146,13 +151,17 @@ def update(db: Session, post_id: int, request: PostBase):
   if request.content is not None:
     post.content = request.content
   if request.media is not None:
+    if post.media:
+      response = supabase.storage.from_('post_img').remove(post.media)
+      if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Error removing media from storage")
     post.media = request.media
-  if request.postType is not None:
-    post.postType = request.postType
-  if request.parentPostId is not None:
-    post.parentPostId = request.parentPostId
+  if request.post_type is not None:
+    post.post_type = request.post_type
+  if request.parent_post_id is not None:
+    post.parent_post_id = request.parent_post_id
 
-  #post.lastUpdated = datetime.utcnow()  # Assuming you have a lastUpdated field in your model
+  post.last_updated = datetime.utcnow()  
 
   db.commit()
   db.refresh(post)
