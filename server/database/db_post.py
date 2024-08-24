@@ -1,5 +1,6 @@
 from typing import Optional
 import os
+import uuid
 from dotenv import load_dotenv
 from enum import Enum
 from sqlalchemy.orm import joinedload
@@ -8,11 +9,11 @@ from sqlalchemy.orm.session import Session
 from database.models import DbPost, DbUser, DbVote, DbTag, DbComment, post_tags
 from database.database import get_redis_client, supabase
 import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import HTTPException, status, UploadFile, File
 from redis_om import HashModel
 from redis_om import Field as RedisField
-import uuid
+from uuid import UUID
 
 
 class PostType(str, Enum):
@@ -21,11 +22,11 @@ class PostType(str, Enum):
 
 
 class PostBase(BaseModel):
-  title: str
-  content:str
-  post_type:PostType
-  user_id: uuid.UUID
-  parent_post_id:Optional[int] = None
+  title: str = Field(..., description="Title of the post, must be between 5 and 50 characters.", max_length=50, min_length=5)
+  content:str = Field(..., description="Content of the post, must be between 10 and 10000 characters.", max_length=10000, min_length=10)
+  post_type:PostType = Field(default=PostType.question, description="Type of the post, either 'Question' or 'Answer'")
+  user_id: UUID = Field(..., description="User ID of the post creator")
+  parent_post_id:Optional[int] = Field(default=0, ge=0, description="ID of the parent post if the post is an answer to a question")
 
 
 class PostMetaCache(HashModel):
@@ -39,7 +40,7 @@ class PostMetaCache(HashModel):
 
 
 
-async def create(db: Session, title: str, content: str, post_type: PostType, user_id: uuid.UUID, parent_post_id: Optional[int] = None, file: Optional[UploadFile] = None):
+async def create(db: Session, title: str, content: str, post_type: PostType, user_id: UUID, parent_post_id: Optional[int] = None, file: Optional[UploadFile] = None):
     # Check if the user exists
     user = db.query(DbUser).filter(DbUser.user_id == user_id).first()
     if not user:
@@ -51,7 +52,9 @@ async def create(db: Session, title: str, content: str, post_type: PostType, use
     file_url = None
     if file:
         image_content = await file.read()
-        file_name = file.filename
+        original_filename = file.filename
+
+        file_name = f"{user_id}_{uuid.uuid4()}_{original_filename}"
 
         response = supabase.storage.from_('post_img').upload(file_name, image_content)
 
@@ -116,12 +119,17 @@ def get_top_posts(db: Session, limit: int = 10, offset: int = 0):
   ).limit(limit).offset(offset).all()
 
 
-def delete(db: Session, post_id: int,user_id: uuid.UUID):
+def delete(db: Session, post_id: int, user_id: UUID):
   post = db.query(DbPost).filter(DbPost.post_id == post_id).first()
+
   if not post:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-  if str(post.userId) != str(user_id):
+  if post.user_id != user_id:
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only post creator can delete post')
+  if post.media:
+    response = supabase.storage.from_('post_img').remove(post.media)
+    if response.status_code != 200:
+      raise HTTPException(status_code=response.status_code, detail="Error removing media from storage")
 
   db.delete(post)
   db.commit()
@@ -143,13 +151,17 @@ def update(db: Session, post_id: int, request: PostBase):
   if request.content is not None:
     post.content = request.content
   if request.media is not None:
+    if post.media:
+      response = supabase.storage.from_('post_img').remove(post.media)
+      if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Error removing media from storage")
     post.media = request.media
-  if request.postType is not None:
-    post.postType = request.postType
-  if request.parentPostId is not None:
-    post.parentPostId = request.parentPostId
+  if request.post_type is not None:
+    post.post_type = request.post_type
+  if request.parent_post_id is not None:
+    post.parent_post_id = request.parent_post_id
 
-  #post.lastUpdated = datetime.utcnow()  # Assuming you have a lastUpdated field in your model
+  post.last_updated = datetime.utcnow()  
 
   db.commit()
   db.refresh(post)
