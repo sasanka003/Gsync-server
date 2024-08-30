@@ -138,3 +138,10 @@ class DbPlantationAccess(Base):
     plantation_id = Column(Integer, ForeignKey("plantation.plantation_id", ondelete="CASCADE"), nullable=False)
     user = relationship("DbEnterpriseUser", back_populates="plantation_access")
     plantation = relationship("DbPlantation", back_populates="user_access")
+
+class DbPlantationImage(Base):
+    __tablename__ = "plantation_images"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    image_url = Column(Text, nullable=False)
+    plantation_id = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
+    plantation = relationship("DbPlantation", back_populates="images")
