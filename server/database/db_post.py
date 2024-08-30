@@ -102,6 +102,9 @@ def get_top_posts_query(db: Session):
     DbUser,
     DbPost.user_id == DbUser.user_id
   ).outerjoin(
+    post_tags,
+    DbPost.post_id == post_tags.c.post_id
+  ).outerjoin(
     DbTag, 
     post_tags.c.tag_id == DbTag.tag_id
   ).options(
