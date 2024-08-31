@@ -19,12 +19,12 @@ async def create_post(
     title: str = Form(...),
     content: str = Form(...),
     post_type: PostType = Form(...),
-    user_id: uuid.UUID = Form(...),
+    # user_id: uuid.UUID = Form(...),
     tags: Optional[List[str]] = Form([]),
     parent_post_id: Optional[int] = Form(None),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    # current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     
     return await db_post.create(
@@ -32,7 +32,7 @@ async def create_post(
         title,
         content, 
         post_type, 
-        user_id, # current_user.user_id, 
+        current_user.user_id, # current_user.user_id, 
         parent_post_id, 
         file
     )
