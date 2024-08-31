@@ -12,18 +12,20 @@ To run tests, run the following command at the root folder
 
 ## Installation
 
-Install requirements with pip
+using uv for package management
 
 ```bash
-  pip install -r server/modules/requirements.txt
+  pip install uv
   cd server
 ```
 
 to run server in dev mode
 
 ```bash
-fastapi dev app.py
+  uv run fastapi dev app.py
 ```
+
+uv run installs all dependencies
 
 ## Environment Variables
 
