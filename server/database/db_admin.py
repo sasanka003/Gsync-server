@@ -15,11 +15,9 @@ class EditGardener(BaseModel):
 
 
 def get_all_gardeners(db: Session, page:int, page_size:int):
-
     offset = (page - 1) * page_size
 
     gardeners = db.query(DbUser).filter(DbUser.type == 'User').order_by(asc(DbUser.created_at)).offset(offset).limit(page_size).all()
-
     return gardeners
 
 def delete_gardener(db: Session,user_id: uuid.UUID):

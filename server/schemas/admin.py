@@ -6,7 +6,7 @@ class GardenersDisplay(BaseModel):
     user_id: uuid.UUID
     name: str
     email: str
-    phone: str
+    phone: str | None
     class Config:
         from_attributes = True
 
