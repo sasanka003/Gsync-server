@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 logfire.instrument_fastapi(app)
-# logfire.instrument_sqlalchemy(engine=engine)
+logfire.instrument_sqlalchemy(engine=engine)
 app.include_router(login.router)
 app.include_router(user.router)
 app.include_router(posts.router)
