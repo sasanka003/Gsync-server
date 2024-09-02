@@ -1,4 +1,4 @@
-from database.models import DbUser, DbPlantation, DbPlantationStatus
+from database.models import DbUser, DbPlantation, DbPlantationStatus, DbPlantationComments
 from sqlalchemy.orm import Session
 from fastapi import status, HTTPException
 from sqlalchemy import asc,func
@@ -12,6 +12,9 @@ class EditGardener(BaseModel):
     #address
     phone:str
 
+class Comment(BaseModel):
+    plantation_id: int
+    comment: str
 
 
 def get_all_gardeners(db: Session, page:int, page_size:int):
@@ -43,11 +46,15 @@ def edit_gardener(db: Session, user_id: uuid.UUID, request:EditGardener):
 
     return gardener
 
+# Get all plantation requests
 def get_all_plantations(db: Session):
 
     result = db.query(DbPlantation.plantation_id, DbPlantation.type, DbPlantation.user_id, DbPlantation.city, DbPlantation.createdAt, DbPlantationStatus.status) \
         .join(DbPlantationStatus,DbPlantation.plantation_id == DbPlantationStatus.plantation_id).all()
     return result
+
+def get_plantation(db: Session, plantation_id: int):
+    return db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
 
 
 def update_plantation_status(db: Session, plantation_id: int, status: str):
@@ -82,3 +89,12 @@ def update_plantation_status(db: Session, plantation_id: int, status: str):
         db.refresh(status_entry)
         return status_entry
 
+def add_comment(db:Session, request:Comment):
+    new_comment = DbPlantationComments (
+        plantation_id = request.plantation_id,
+        comment = request.comment
+    )
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+    return new_comment
