@@ -37,7 +37,7 @@ async def add_sensor(db: Session, request: SensorBase):
     return new_sensor
 
 
-async def upload_image(db: Session, file: UploadFile, sensor_id: int):
+async def upload_image(db: Session, file: UploadFile, sensor_id: uuid):
     # Check if the sensor exists
     sensor = db.query(DbSensor).filter(DbSensor.sensor_id == sensor_id).first()
     if not sensor:
