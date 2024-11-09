@@ -152,6 +152,7 @@ class DbSensorImage(Base):
     sensor_id = Column(Integer, ForeignKey("sensors.sensor_id"), nullable=False)
     # sensor = relationship("DbSensor", back_populates="images")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    plantation_id  = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
 
 class DbSensorData(Base):
     __tablename__ = "sensor_data"
