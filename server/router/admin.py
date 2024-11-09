@@ -46,6 +46,7 @@ def edit_gardener(user_id:uuid.UUID, request:EditGardener, db: Session = Depends
 
 
 # Get all plantation requests
+# Add pagination
 @router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationRequestDisplay], responses={404: {"description": "Plantations not found"}})
 def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     plantations = db_admin.get_all_plantations(db)
