@@ -34,7 +34,14 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
-app = FastAPI(lifespan=lifespan)
+
+app = FastAPI(
+    lifespan=lifespan,
+    title="Gsync API",
+    description="API for Gsync",
+    version="0.3.0",
+)
+
 logfire.instrument_fastapi(app)
 logfire.instrument_sqlalchemy(engine=engine)
 app.include_router(login.router)
@@ -44,6 +51,7 @@ app.include_router(plantations.router)
 app.include_router(comments.router)
 app.include_router(admin.router)
 app.include_router(sensor.router)
+
 
 
 @app.get('/')
