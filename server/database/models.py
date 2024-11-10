@@ -138,3 +138,28 @@ class DbPlantationAccess(Base):
     plantation_id = Column(Integer, ForeignKey("plantation.plantation_id", ondelete="CASCADE"), nullable=False)
     user = relationship("DbEnterpriseUser", back_populates="plantation_access")
     plantation = relationship("DbPlantation", back_populates="user_access")
+
+class DbSensor(Base):
+    __tablename__ = "sensors"
+    sensor_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    plantation_id = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
+    # plantation = relationship("DbPlantation", back_populates="sensors")
+
+class DbSensorImage(Base):
+    __tablename__ = "sensor_images"
+    image_id = Column(Integer, primary_key=True, autoincrement=True)
+    image_url = Column(Text, nullable=False)
+    sensor_id = Column(Integer, ForeignKey("sensors.sensor_id"), nullable=False)
+    # sensor = relationship("DbSensor", back_populates="images")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    plantation_id  = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
+
+class DbSensorData(Base):
+    __tablename__ = "sensor_data"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sensor_id = Column(Integer, ForeignKey("sensors.sensor_id"), nullable=False)
+    # sensor = relationship("DbSensor", back_populates="data")
+    temperature = Column(Float, nullable=False)
+    soil_moisture = Column(Float, nullable=False)
+    # other sensor data
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
