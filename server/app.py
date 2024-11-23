@@ -7,7 +7,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from database import models
 from database.database import engine, init_redis, redis_close
 from services.topic_extractor import scheduled_update_trending_topics
-from router import user, posts, plantations,login, comments, admin
+from router import user, posts, plantations,login, comments, admin, sensor
 from fastapi.middleware.cors import CORSMiddleware
 import logfire
 
@@ -34,12 +34,14 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
+
 app = FastAPI(
     lifespan=lifespan,
     title="Gsync API",
     description="API for Gsync",
     version="0.3.0",
 )
+
 logfire.instrument_fastapi(app)
 logfire.instrument_sqlalchemy(engine=engine)
 app.include_router(login.router)
@@ -48,6 +50,8 @@ app.include_router(posts.router)
 app.include_router(plantations.router)
 app.include_router(comments.router)
 app.include_router(admin.router)
+app.include_router(sensor.router)
+
 
 
 @app.get('/')
