@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from typing import Optional, List
 import uuid
@@ -32,12 +33,17 @@ def get_plantation(plantation_id: int, db: Session = Depends(get_db), token: dic
     return status.HTTP_404_NOT_FOUND
 
 
-@router.get("/get/{user_id}", description='get all plantations of a user', response_description="all plantations of a user", response_model=PlantationDisplay, responses={404: {"description": "Plantations not found"}})
+@router.get("/get/{user_id}", description='get all plantations of a user', response_description="all plantations of a user", response_model=List[PlantationDisplay], responses={404: {"description": "Plantations not found"}})
 def get_user_plantations(user_id: uuid.UUID, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):   
-    plantations = db_plantation.get_user_plantations(db, user_id)
-    if plantations:
-        return PlantationDisplay.model_validate(plantations)
-    return status.HTTP_404_NOT_FOUND
+    try:
+        plantations = db_plantation.get_user_plantations(db, user_id)
+        if plantations:
+            return [PlantationDisplay.model_validate(plantation) for plantation in plantations]
+        return status.HTTP_404_NOT_FOUND
+    except ValidationError as e:
+        raise status.HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        raise status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @router.delete("/delete/{plantation_id}", description='delete a plantation by id', response_description="plantation deleted", responses={404: {"description": "Plantation not found"}})
