@@ -16,4 +16,5 @@ dependencies = [
     "redis-om>=0.3.2",
     "sqlalchemy>=2.0.32",
     "supabase>=2.7.3",
+    "python-dotenv>=1.0.1"
 ]

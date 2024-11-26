@@ -25,7 +25,7 @@ def chat_user():
 def chat_ent_admin():
     return {"message": "Hello World"}
 
-@app.get('/chat/enterprise/user')
+@app.get('/chat/iot')
 def chat_ent_user():
     return {"message": "Hello World"}
 
