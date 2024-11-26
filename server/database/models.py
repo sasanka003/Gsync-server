@@ -140,6 +140,13 @@ class DbPlantationAccess(Base):
     user = relationship("DbEnterpriseUser", back_populates="plantation_access")
     plantation = relationship("DbPlantation", back_populates="user_access")
 
+class DbPlantationComments(Base):
+    __tablename__ = "plantation_comment"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    plantation_id = Column(Integer, ForeignKey('plantation.plantation_id'), nullable=False)
+    comment = Column(Text)
+    plantation = relationship("DbPlantation", back_populates="comments")
+
 class DbSensor(Base):
     __tablename__ = "sensors"
     sensor_id = Column(Integer, primary_key=True, index=True, autoincrement=True)

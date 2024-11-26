@@ -6,7 +6,7 @@ from schemas.admin import GardenersDisplay, PlantationDisplay, PlantationRequest
 from auth.authentication import admin_only
 from sqlalchemy.orm import Session
 import uuid
-from database.db_admin import EditGardener, Comment
+from database.db_admin import EditGardener, Comment, UpdatePlantationStatus
 
 router = APIRouter(
     prefix='/main/admin',
@@ -46,7 +46,6 @@ def edit_gardener(user_id:uuid.UUID, request:EditGardener, db: Session = Depends
 
 
 # Get all plantation requests
-# Add pagination
 @router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationRequestDisplay], responses={404: {"description": "Plantations not found"}})
 def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     plantations = db_admin.get_all_plantations(db)
@@ -60,25 +59,23 @@ def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(adm
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
 
 @router.get("/plantation/{plantation_id}", description='get a plantation by id', response_description="plantation retrieved", response_model=PlantationDisplay, responses={404: {"description": "Plantation not found"}})
-def get_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+def get_plantation(plantation_id: int, db: Session = Depends(get_db),):
     plantation = db_admin.get_plantation(db, plantation_id)
     if plantation:
         return PlantationDisplay.model_validate(plantation)
     return status.HTTP_404_NOT_FOUND
 
-@router.put("/plantations/{plantation_id}/{status}", description='update plantation status', response_description="plantation status updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation_status(plantation_id: int, status: str, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
-    if status not in ['Unapproved', 'Approved', 'Declined']:
-        raise HTTPException(status_code=400, detail="Invalid status")
+@router.put("/plantations/{plantation_id}", description='update plantation status', response_description="plantation status updated", responses={404: {"description": "Plantation not found"}})
+def update_plantation_status(plantation_id: int, request: UpdatePlantationStatus, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
 
-    plantation_status = db_admin.update_plantation_status(db, plantation_id, status)
-    if plantation_status:
+    plantation = db_admin.update_plantation_status(db, plantation_id, request)
+    if plantation:
         return {"message": "Plantation status updated successfully"}
     return status.HTTP_404_NOT_FOUND
 
-@router.post("/comment", description='add comment for plantation', response_description="add comment", status_code=status.HTTP_201_CREATED)
-def add_comment(data: Comment, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
-    comment = db_admin.add_comment(db,data)
-    if comment:
-        return {"message": "Comment added successfully"}
-    return status.HTTP_400_BAD_REQUEST
+# @router.post("/comment", description='add comment for plantation', response_description="add comment", status_code=status.HTTP_201_CREATED)
+# def add_comment(data: Comment, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+#     comment = db_admin.add_comment(db,data)
+#     if comment:
+#         return {"message": "Comment added successfully"}
+#     return status.HTTP_400_BAD_REQUEST
