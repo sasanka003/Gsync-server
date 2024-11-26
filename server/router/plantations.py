@@ -37,9 +37,9 @@ def get_plantation(plantation_id: int, db: Session = Depends(get_db), token: dic
 def get_user_plantations(user_id: uuid.UUID, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):   
     try:
         plantations = db_plantation.get_user_plantations(db, user_id)
-        if plantations:
-            return [PlantationDisplay.model_validate(plantation) for plantation in plantations]
-        return status.HTTP_404_NOT_FOUND
+        if not plantations:
+            return status.HTTP_404_NOT_FOUND
+        return [PlantationDisplay.model_validate(plantation) for plantation in plantations]
     except ValidationError as e:
         raise status.HTTP_500_INTERNAL_SERVER_ERROR
     except Exception as e:

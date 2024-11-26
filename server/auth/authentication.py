@@ -34,10 +34,10 @@ async def get_current_user(token: dict = Depends(verify_token), db: Session = De
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    return user
+    return user_id
 
 
-def admin_only(current_user: dict = Depends(get_current_user)):
+async def admin_only(current_user: dict = Depends(get_current_user)):
     if current_user.type != 'SysAdmin':
         raise HTTPException(status_code=403, detail="Permission denied")
     return current_user
