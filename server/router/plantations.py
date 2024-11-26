@@ -25,7 +25,7 @@ def register_plantation(data: UserPlantation, db: Session = Depends(get_db)):
     return status.HTTP_400_BAD_REQUEST
 
 
-@router.get("/get/{plantation_id}", description='get a plantation by id', response_description="plantation retrieved", response_model=PlantationDisplay, responses={404: {"description": "Plantation not found"}})
+@router.get("/{plantation_id}", description='get a plantation by id', response_description="plantation retrieved", response_model=PlantationDisplay, responses={404: {"description": "Plantation not found"}})
 def get_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(verify_token)):
     plantation = db_plantation.get_plantation(db, plantation_id)
     if plantation:
