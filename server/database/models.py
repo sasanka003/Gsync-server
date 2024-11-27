@@ -27,6 +27,7 @@ class DbUser(Base):
     comments = relationship("DbComment", back_populates="user")
     votes = relationship("DbVote", back_populates="user")
     plantations = relationship("DbPlantation", back_populates="user", foreign_keys="[DbPlantation.user_id]")
+    help_requests = relationship("DbHelpRequest", back_populates="user")
 
 class DbEnterpriseUser(Base):
     __tablename__ = "enterprise_users"
@@ -171,3 +172,13 @@ class DbSensorData(Base):
     soil_moisture = Column(Float, nullable=False)
     # other sensor data
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class DbHelpRequest(Base):
+    __tablename__ = "help_request"
+    help_request_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    subject = Column(Text, nullable=False)
+    message = Column(Text, nullable=False)
+    createdAt = Column(DateTime(timezone=True), server_default=func.now())
+    comment = Column(String)
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    user = relationship("DbUser", back_populates="help_requests")

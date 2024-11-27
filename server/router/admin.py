@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, status,Query,HTTPException
 from typing import Optional, List
 from database.database import get_db
 from database import db_admin, db_plantation
-from schemas.admin import GardenersDisplay, PlantationDisplay, PlantationRequestDisplay
+from schemas.admin import GardenersDisplay, PlantationDisplay, PlantationRequestDisplay, HelpRequestDisplay
 from auth.authentication import admin_only
 from sqlalchemy.orm import Session
 import uuid
-from database.db_admin import EditGardener, Comment, UpdatePlantationStatus
+from database.db_admin import EditGardener, Comment, UpdatePlantationStatus, HelpRequestComment
 
 router = APIRouter(
     prefix='/main/admin',
@@ -79,3 +79,29 @@ def update_plantation_status(plantation_id: int, request: UpdatePlantationStatus
 #     if comment:
 #         return {"message": "Comment added successfully"}
 #     return status.HTTP_400_BAD_REQUEST
+
+@router.get("/helpRequest", description='get all help requests', response_description='all help requests', response_model=List[HelpRequestDisplay],responses={404: {"description": "Help requests not found"}})
+def get_all_help_requests(db:Session = Depends(get_db), token: dict = Depends(admin_only)):
+    helpRequests = db_admin.get_all_help_requests(db)
+
+    response = []
+    if helpRequests:
+        for helpRequest in helpRequests:
+            response.append(HelpRequestDisplay.model_validate(helpRequest))
+        return response
+
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Help requests not found")
+
+@router.get("/helpRequest/{help_request_id}", description='get a help request', response_description='help request retrieved', response_model=HelpRequestDisplay, responses={404: {"description": "Help request not found"}})
+def get_help_request(help_request_id:int, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+    helpRequest = db_admin.get_help_request(db, help_request_id)
+    if helpRequest:
+        return HelpRequestDisplay.model_validate(helpRequest)
+    return status.HTTP_404_NOT_FOUND
+
+@router.put("/helpRequest/{help_request_id}", description="add a comment", response_description="added a comment", responses={404: {"description": "Help request not found"}})
+def add_commets(help_request_id:int, request:HelpRequestComment, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+    helpRequest = db_admin.add_comment(db,help_request_id, request)
+    if helpRequest:
+        return {"message": "Add a comment successfully"}
+    return status.HTTP_404_NOT_FOUND
