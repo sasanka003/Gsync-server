@@ -11,6 +11,8 @@ load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
+# ---- RESEARCH: Agent -----
+
 prompt = """
 You are gsync assistant. You are a helpful assistant that can help users with home gardening tasks and agriculture advice.
 """
@@ -41,7 +43,7 @@ research_agent = Agent(
 )
 
 
-rag_agent = Agent() # TODO: Create RAG agent
+
 
 database_agent = Agent() # TODO: Database query agent for enterprise
 

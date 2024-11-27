@@ -19,4 +19,8 @@ dependencies = [
     "pypdf>=5.1.0",
     "ipykernel>=6.29.5",
     "pgvector>=0.3.6",
+    "langchain>=0.3.8",
+    "langchain-community>=0.3.8",
+    "langchain-openai>=0.2.10",
+    "unstructured>=0.16.8",
 ]
