@@ -1,4 +1,4 @@
-from database.models import DbUser, DbPlantation, DbPlantationStatus, DbPlantationComments
+from database.models import DbUser, DbPlantation, DbPlantationStatus, DbPlantationComments, DbHelpRequest
 from sqlalchemy.orm import Session
 from fastapi import status, HTTPException
 from sqlalchemy import asc,func
@@ -21,6 +21,9 @@ class UpdatePlantationStatus(BaseModel):
     plantation_length: float
     comment: str
     is_approved: bool
+
+class HelpRequestComment(BaseModel):
+    comment: str
 
 
 
@@ -133,3 +136,43 @@ def add_comment(db:Session, request:Comment):
     db.commit()
     db.refresh(new_comment)
     return new_comment
+
+def get_all_help_requests(db:Session):
+    result = db.query(
+        DbHelpRequest.help_request_id,
+        DbHelpRequest.subject,
+        DbHelpRequest.message,
+        DbHelpRequest.createdAt,
+        DbUser.name,
+        DbUser.type
+    ) \
+    .join(DbUser,DbHelpRequest.user_id == DbUser.user_id) \
+    .all()
+    return result
+
+def get_help_request(db:Session, help_request_id:int):
+    result = db.query(
+        DbHelpRequest.help_request_id,
+        DbHelpRequest.subject,
+        DbHelpRequest.message,
+        DbHelpRequest.createdAt,
+        DbUser.name,
+        DbUser.type
+    ) \
+        .join(DbUser, DbHelpRequest.user_id == DbUser.user_id) \
+        .filter(DbHelpRequest.help_request_id == help_request_id) \
+        .first()
+    return result
+
+def add_comment(db:Session, help_request_id:int, request:HelpRequestComment):
+
+    help_request = db.query(DbHelpRequest).filter(DbHelpRequest.help_request_id == help_request_id).one()
+
+    if not help_request:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Help request not found")
+
+    help_request.comment = request.comment
+
+    db.commit()
+    db.refresh(help_request)
+    return help_request

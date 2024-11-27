@@ -36,6 +36,12 @@ class PlantationDisplay(BaseModel):
     class Config:
         from_attributes = True
 
-
-
-
+class HelpRequestDisplay(BaseModel):
+    help_request_id: int
+    subject: str
+    message: str
+    createdAt: datetime
+    name: str
+    type: str
+    class Config:
+        from_attributes = True
