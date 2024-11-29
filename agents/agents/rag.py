@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from phi.agent import Agent
+from phi.model.openai import OpenAIChat
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores.supabase import SupabaseVectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
@@ -45,5 +46,25 @@ vector_store = SupabaseVectorStore(
     query_name="match_documents",
 )
 
+retriever = vector_store.as_retriever(search_kwargs={"k": 8})
+knowledge_base = LangChainKnowledgeBase(retriever=retriever)
 
-rag_agent = Agent() 
+# ----- PROMPT: agent -----
+
+introduction = """
+"""
+guidlines = """
+"""
+instructions = """
+"""
+
+
+rag_agent = Agent(
+    provider=OpenAIChat(temperature=0.1),
+    name="Document search agent",
+    introduction=introduction,
+    knowledge_base=knowledge_base,
+    add_context=True,
+    instructions=instructions,
+    expected_output=""
+) 

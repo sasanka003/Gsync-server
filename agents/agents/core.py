@@ -47,6 +47,3 @@ research_agent = Agent(
 
 database_agent = Agent() # TODO: Database query agent for enterprise
 
-iot_agent = Agent() # TODO: IOT information query agent
-
-ad_agent = Agent() # TODO: Advertisement agent
