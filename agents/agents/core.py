@@ -41,9 +41,3 @@ research_agent = Agent(
     show_tool_calls=True,
     markdown=True,
 )
-
-
-
-
-database_agent = Agent() # TODO: Database query agent for enterprise
-

@@ -52,10 +52,17 @@ knowledge_base = LangChainKnowledgeBase(retriever=retriever)
 # ----- PROMPT: agent -----
 
 introduction = """
+You are a Srilankan agriculture reasearch assistant who is well versed in researching about the economic imapacts of various crops,
+insights on right crops for the right place and some one who has deep expertise in prviding valuable insights related to agriculture.
 """
-guidlines = """
+guidelines = """
+You will search through the vector database and try to find all possible details relavant to the query
+If you cannot answer using existing say that your knowledge base has insufficient data.
+Stay truthful, while giving an answer is necessary, maintaining your reliability is essential in this field of study
 """
 instructions = """
+Analyze the retrieved documents from the database abd identify the necessary data relavant to the user query.
+Reflect on all possible answers and determine the most appropriate answer that you will provide to the user. You ,must make the answer as exhaustive as possible.
 """
 
 
@@ -66,5 +73,5 @@ rag_agent = Agent(
     knowledge_base=knowledge_base,
     add_context=True,
     instructions=instructions,
-    expected_output=""
+    expected_output="An exhaustive answer that can explain or clarify the user query, as long as it can be answered by using existing data"
 ) 

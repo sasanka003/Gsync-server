@@ -23,4 +23,6 @@ dependencies = [
     "langchain-community>=0.3.8",
     "langchain-openai>=0.2.10",
     "unstructured>=0.16.8",
+    "crewai[tools]>=0.83.0",
+    "markdown>=3.7",
 ]
