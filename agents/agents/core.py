@@ -36,7 +36,8 @@ research_agent = Agent(
         "Always include sources", 
         "Gather as much details as possible", 
         "the provided answer should be focused on Srilanka", 
-        "research using arxiv if user asks for indepth information or if web research insufficient"
+        "research using arxiv if user asks for indepth information or if web research insufficient",
+        "provide sufficient guidance for treatment of plant diseases/ pest control or basic gardening if asked."
     ],
     show_tool_calls=True,
     markdown=True,
