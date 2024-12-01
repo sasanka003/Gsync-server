@@ -121,6 +121,7 @@ class DbPlantation(Base):
     user = relationship("DbUser", back_populates="plantations")
     statuses = relationship("DbPlantationStatus", back_populates="plantation")
     user_access = relationship("DbPlantationAccess", back_populates="plantation", cascade="all, delete-orphan")
+    comments = relationship("DbPlantationComments", back_populates="plantation")
 
 class DbPlantationStatus(Base):
     __tablename__ = "plantation_statuses"
@@ -138,6 +139,13 @@ class DbPlantationAccess(Base):
     plantation_id = Column(Integer, ForeignKey("plantation.plantation_id", ondelete="CASCADE"), nullable=False)
     user = relationship("DbEnterpriseUser", back_populates="plantation_access")
     plantation = relationship("DbPlantation", back_populates="user_access")
+
+class DbPlantationComments(Base):
+    __tablename__ = "plantation_comment"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    plantation_id = Column(Integer, ForeignKey('plantation.plantation_id'), nullable=False)
+    comment = Column(Text)
+    plantation = relationship("DbPlantation", back_populates="comments")
 
 class DbSensor(Base):
     __tablename__ = "sensors"
@@ -163,3 +171,13 @@ class DbSensorData(Base):
     soil_moisture = Column(Float, nullable=False)
     # other sensor data
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class DbHelpRequest(Base):
+    __tablename__ = "help_request"
+    help_request_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    subject = Column(Text, nullable=False)
+    message = Column(Text, nullable=False)
+    createdAt = Column(DateTime(timezone=True), server_default=func.now())
+    comment = Column(String)
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    user = relationship("DbUser", back_populates="help_requests")
