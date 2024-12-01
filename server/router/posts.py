@@ -14,6 +14,28 @@ router = APIRouter(
     tags=['post']
 )
 
+
+# Get a post
+@router.get("/top/", response_model=List[PostDisplay])
+def get_top_posts(
+    limit: int = Query(10, gt=1, le=100, description="post limit per req."), 
+    offset: int = Query(0, ge=0, description="post offset in current request."), 
+    db: Session = Depends(get_db)):
+
+    try:
+        top_posts = db_post.get_top_posts(db, limit=limit, offset=offset)
+        return [
+            PostDisplay(
+                **post.__dict__,
+                user_name=user_name,
+                upvote_count=upvote_count,
+                downvote_count=downvote_count,
+                comment_count=comment_count
+            ) for post, user_name, upvote_count, downvote_count, comment_count in top_posts
+        ]
+    except:
+        raise status.HTTP_404_NOT_FOUND
+
 @router.post('/create',response_model=PostCreateDisplay) 
 async def create_post(
     title: str = Form(...),
@@ -50,25 +72,3 @@ def delete_post(post_id:int, db: Session = Depends(get_db), current_user: dict =
 @router.put("/{post_id}", response_model=PostDisplay)
 def update_post(post_id: int, request: PostBase, db: Session = Depends(get_db), token: dict = Depends(verify_token)):
     return  db_post.update(db, post_id, request)
-
-
-# Get a post
-@router.get("/top/", response_model=List[PostDisplay])
-def get_top_posts(
-    limit: int = Query(10, gt=1, le=100, description="post limit per req."), 
-    offset: int = Query(0, ge=0, description="post offset in current request."), 
-    db: Session = Depends(get_db)):
-
-    try:
-        top_posts = db_post.get_top_posts(db, limit=limit, offset=offset)
-        return [
-            PostDisplay(
-                **post.__dict__,
-                user_name=user_name,
-                upvote_count=upvote_count,
-                downvote_count=downvote_count,
-                comment_count=comment_count
-            ) for post, user_name, upvote_count, downvote_count, comment_count in top_posts
-        ]
-    except:
-        raise status.HTTP_404_NOT_FOUND

@@ -1,8 +1,9 @@
 data_task:
   description: >
+    You as a member of Gsync enterprise team will be accomplishing the following task for the client {client_name} in {location}
     Collect all the necessary data regarding the agricultural business by accessing the business's internal databases, IoT sensors, and external web sources to gather data relevant to current operations and future forecasting. 
     Your target is to collect and process information required by the financial_analyst to evaluate current financial performance and plan next quarter's budget and strategies. Additionally, gather data necessary for the data_analyst to prepare a comprehensive report for the stakeholders.
-    You are provided with the list of crops grown: {crop_list}, the current date: {current_date}, and the business location: Colombo, Sri Lanka. Ensure all collected data is relevant to the geographic location and time period.
+    You are provided with the list of crops grown and the details: {crop_list}. Ensure all collected data is relevant to the geographic location and time period.
   expected_output: >
     - Cleaned and structured data on crop yields for the current quarter.
     - Financial data such as operational costs and revenue related to agricultural production.
@@ -13,6 +14,7 @@ data_task:
 
 financial_task:
   description: >
+    You as a member of Gsync enterprise team will be accomplishing the following task for the client {client_name} in {location}
     You are provided with the data on the crops grown by your buisness and the yields for the current quarter as well as employee efficiency reports.
     Using your skills of financial analysis to make decisions on the next quarter and use your current information to build up financial decisions that you would make
     to help your organisation gain better yields.
@@ -23,6 +25,7 @@ financial_task:
 
 reporting_task:
   description: >
+    You as a member of Gsync enterprise team will be accomplishing the following task for the client {client_name} in {location}
     Review the context you got and expand each topic into a full section for a report.
     Make sure the report is detailed and contains any and all relevant information.
   expected_output: >

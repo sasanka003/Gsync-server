@@ -9,6 +9,7 @@ import os
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 os.environ["SERPER_API_KEY"] = os.getenv("SERPER_API_KEY")
+os.environ["EXA_API_KEY"] = os.getenv("EXA_API_KEY")
 llm = LLM(model="gpt-4o", temperature=0.2)
 
 @CrewBase
@@ -26,7 +27,7 @@ class EnterpriseAnalystCrew():
       config=self.agents_config['data_engineer'],
       verbose=True,
       llm=llm,
-      tools=[SerperDevTool()]
+      tools=[SerperDevTool(country="lk"), EXASearchTool()]
     )
 
   @agent
@@ -35,7 +36,7 @@ class EnterpriseAnalystCrew():
       config=self.agents_config['financial_analyst'],
       verbose=True,
       llm=llm,
-      tools=[SerperDevTool()]
+      tools=[SerperDevTool(country="lk")]
     )
 
   @agent

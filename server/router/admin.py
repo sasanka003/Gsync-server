@@ -14,6 +14,40 @@ router = APIRouter(
     tags=['admin']
 )
 
+
+@router.get("/helpRequest", description='get all help requests', response_description='all help requests', response_model=List[HelpRequestDisplay],responses={404: {"description": "Help requests not found"}})
+def get_all_help_requests(db:Session = Depends(get_db), token: dict = Depends(admin_only)):
+    helpRequests = db_admin.get_all_help_requests(db)
+
+    response = []
+    if helpRequests:
+        for helpRequest in helpRequests:
+            response.append(HelpRequestDisplay.model_validate(helpRequest))
+        return response
+
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Help requests not found")
+
+@router.get("/helpRequest/{help_request_id}", description='get a help request', response_description='help request retrieved', response_model=HelpRequestDisplay, responses={404: {"description": "Help request not found"}})
+def get_help_request(help_request_id:int, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+    helpRequest = db_admin.get_help_request(db, help_request_id)
+    if helpRequest:
+        return HelpRequestDisplay.model_validate(helpRequest)
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
+
+
+# Get all plantation requests
+@router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationRequestDisplay], responses={404: {"description": "Plantations not found"}})
+def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+    plantations = db_admin.get_all_plantations(db)
+
+    response = []
+    if plantations:
+        for plantation in plantations:
+            response.append(PlantationRequestDisplay.model_validate(plantation))
+        return response
+
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
+
 @router.get("/gardeners/", description='get all gardeners', response_description="all gardeners", response_model=List[GardenersDisplay], responses={404: {"description": "Gardeners not found"}})
 def get_all_gardeners(page: int = Query(1, ge=1), page_size: int = Query(10, ge=1),db: Session = Depends(get_db), token: dict = Depends(admin_only)):
 
@@ -45,26 +79,13 @@ def edit_gardener(user_id:uuid.UUID, request:EditGardener, db: Session = Depends
         return {"message": "Gardener edited successfully"}
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardener not found")
 
-
-# Get all plantation requests
-@router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationRequestDisplay], responses={404: {"description": "Plantations not found"}})
-def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(admin_only)):
-    plantations = db_admin.get_all_plantations(db)
-
-    response = []
-    if plantations:
-        for plantation in plantations:
-            response.append(PlantationRequestDisplay.model_validate(plantation))
-        return response
-
-    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
-
 @router.get("/plantation/{plantation_id}", description='get a plantation by id', response_description="plantation retrieved", response_model=PlantationDisplay, responses={404: {"description": "Plantation not found"}})
 def get_plantation(plantation_id: int, db: Session = Depends(get_db),):
     plantation = db_admin.get_plantation(db, plantation_id)
     if plantation:
         return PlantationDisplay.model_validate(plantation)
-    return status.HTTP_404_NOT_FOUND
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
+
 
 @router.put("/plantations/{plantation_id}/{status}", description='update plantation status', response_description="plantation status updated", responses={404: {"description": "Plantation not found"}})
 def update_plantation_status(plantation_id: int, plantation_status: PlantationStatus, request: UpdatePlantationStatus, db: Session = Depends(get_db), token: dict = Depends(admin_only)): #token: dict = Depends(get_current_user)
@@ -80,28 +101,9 @@ def update_plantation_status(plantation_id: int, plantation_status: PlantationSt
 #         return {"message": "Comment added successfully"}
 #     return status.HTTP_400_BAD_REQUEST
 
-@router.get("/helpRequest", description='get all help requests', response_description='all help requests', response_model=List[HelpRequestDisplay],responses={404: {"description": "Help requests not found"}})
-def get_all_help_requests(db:Session = Depends(get_db), token: dict = Depends(admin_only)):
-    helpRequests = db_admin.get_all_help_requests(db)
-
-    response = []
-    if helpRequests:
-        for helpRequest in helpRequests:
-            response.append(HelpRequestDisplay.model_validate(helpRequest))
-        return response
-
-    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Help requests not found")
-
-@router.get("/helpRequest/{help_request_id}", description='get a help request', response_description='help request retrieved', response_model=HelpRequestDisplay, responses={404: {"description": "Help request not found"}})
-def get_help_request(help_request_id:int, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
-    helpRequest = db_admin.get_help_request(db, help_request_id)
-    if helpRequest:
-        return HelpRequestDisplay.model_validate(helpRequest)
-    return status.HTTP_404_NOT_FOUND
-
 @router.put("/helpRequest/{help_request_id}", description="add a comment", response_description="added a comment", responses={404: {"description": "Help request not found"}})
 def add_commets(help_request_id:int, request:HelpRequestComment, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     helpRequest = db_admin.add_comment(db,help_request_id, request)
     if helpRequest:
         return {"message": "Add a comment successfully"}
-    return status.HTTP_404_NOT_FOUND
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")

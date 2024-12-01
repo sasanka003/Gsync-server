@@ -22,22 +22,22 @@ supabase_key = os.getenv("SUPABASE_KEY")
 
 supabase: Client = create_client(supabase_url, supabase_key)
 embeddings = OpenAIEmbeddings()
-directory = "../documents"
-loader = DirectoryLoader(path=directory, glob="**/*.md", loader_cls=UnstructuredMarkdownLoader)
-text_splitter = RecursiveCharacterTextSplitter.from_language(
-    language=Language.MARKDOWN, chunk_size=1000, chunk_overlap=100
-)
 
-def prepare_database():
-    docs = loader.load()
-    documents = text_splitter.split_documents(docs)
-    SupabaseVectorStore.from_documents(
-        documents=documents,
-        embedding=embeddings,
-        client=supabase,
-        table_name="documents",
-        chunk_size=500
-    )
+# def prepare_database():
+#     directory = "../documents"
+#     loader = DirectoryLoader(path=directory, glob="**/*.md", loader_cls=UnstructuredMarkdownLoader)
+#     text_splitter = RecursiveCharacterTextSplitter.from_language(
+#         language=Language.MARKDOWN, chunk_size=1000, chunk_overlap=100
+#     )
+#     docs = loader.load()
+#     documents = text_splitter.split_documents(docs)
+#     SupabaseVectorStore.from_documents(
+#         documents=documents,
+#         embedding=embeddings,
+#         client=supabase,
+#         table_name="documents",
+#         chunk_size=500
+#     )
 
 vector_store = SupabaseVectorStore(
     client=supabase,
@@ -78,3 +78,6 @@ rag_agent = Agent(
     guidelines=guidelines,
     expected_output="An exhaustive answer that can explain or clarify the user query, as long as it can be answered by using existing data"
 ) 
+
+# result = rag_agent.run(message="Tell me about the best plants to grown in Colombo Srilanka")
+# print(result)

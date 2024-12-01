@@ -17,10 +17,6 @@ router = APIRouter(
 )
 
 
-@router.get("/{user_id}")
-async def get_user_profile(user_id: str, db: Session = Depends(get_db), token: dict = Depends(verify_token)):
-    return {"message": "User profile retrieved successfully"}
-
 @router.post("/contact", description='send contact form', response_description="contact form submitted")
 async def contact_us(background_tasks: BackgroundTasks, contact: ContactData, db: Session = Depends(get_db)):
     db_user.create_contact(db, contact)
@@ -40,3 +36,7 @@ def submit_help_request(user_id:uuid.UUID, request:HelpRequest, db: Session = De
     if helpRequest:
         return {"message": "Help request submitted successfully"}
     return status.HTTP_400_BAD_REQUEST
+
+@router.get("/{user_id}")
+async def get_user_profile(user_id: str, db: Session = Depends(get_db), token: dict = Depends(verify_token)):
+    return {"message": "User profile retrieved successfully"}
