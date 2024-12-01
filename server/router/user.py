@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks, status
 from fastapi_mail import MessageSchema
 from sqlalchemy.orm import Session
 
