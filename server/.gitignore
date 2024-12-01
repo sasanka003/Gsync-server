@@ -31,7 +31,6 @@ MANIFEST
 
 
 
-.venv
 .idea
 .pytest_cache
 .logfire

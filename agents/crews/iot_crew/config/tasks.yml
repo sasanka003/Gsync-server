@@ -1,0 +1,19 @@
+research_task:
+  description: >
+    Conduct a thorough research about any insights that would be helpful to your agriculture buisness using the collected Iot data
+    Make sure you find any interesting and relevant information given that your information would be used for further improvements.
+    Try to research on temperature, humidity, moisture and other necessary iot data. these iot data are collected from a plant bed consisting the below plants.
+    {plant_data}.
+
+  expected_output: >
+    A list with 10 bullet points of the most relevant information using the provided plantbed data.
+  agent: researcher
+
+reporting_task:
+  description: >
+    Review the context you got and expand each topic into a full section for a report.
+    Make sure the report is detailed and contains any and all relevant information.
+  expected_output: >
+    A fully fledge reports with the mains topics, each with a full section of information.
+    Formatted as markdown without '```'
+  agent: reporting_analyst
