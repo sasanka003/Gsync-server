@@ -1,6 +1,14 @@
 from crewai import Agent, Crew, Process, Task
+from crewai import LLM
 from crewai.project import CrewBase, agent, crew, task, after_kickoff, before_kickoff
 from crewai_tools import SerperDevTool
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["SERPER_API_KEY"] = os.getenv("SERPER_API_KEY")
+llm = LLM(model="gpt-4o", temperature=0.2)
 
 @CrewBase
 class IotAnalystCrew():
@@ -16,6 +24,7 @@ class IotAnalystCrew():
     return Agent(
       config=self.agents_config['researcher'],
       verbose=True,
+      llm=llm,
       tools=[SerperDevTool()]
     )
 
@@ -23,6 +32,7 @@ class IotAnalystCrew():
   def reporting_analyst(self) -> Agent:
     return Agent(
       config=self.agents_config['reporting_analyst'],
+      llm=llm,
       verbose=True
     )
 
@@ -36,7 +46,6 @@ class IotAnalystCrew():
   def reporting_task(self) -> Task:
     return Task(
       config=self.tasks_config['reporting_task'],
-      output_file='output/report.md' # This is the file that will be contain the final report.
     )
 
   @crew

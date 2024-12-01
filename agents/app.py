@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 import logfire
 import uvicorn
+from agents.rag import rag_agent
+from agents.core import research_agent
 
 logfire.configure(project_name='gsync-assistant')
 
@@ -16,9 +18,20 @@ logfire.instrument_fastapi(app)
 
 
 
-@app.get('/chat/user')
-def chat_user():
-    return {"message": "Hello World"}
+@app.get('/chat/research')
+def chat_research(query: str = Query(...)):
+    research_results = research_agent.run(
+        message=query
+    )
+    return {"message": research_results.content}
+
+
+@app.get('chat/rag')
+def chat_rag(query: str = Query(...)):
+    rag_results = rag_agent.run(
+        message=query
+    )
+    return {"message": rag_results.content}
 
 
 @app.get('/chat/enterprise/admin')
