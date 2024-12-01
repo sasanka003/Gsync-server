@@ -30,25 +30,23 @@ async def get_current_user(token: dict = Depends(verify_token), db: Session = De
     user_id = user_token.get('id')
     if user_id is None:
         raise HTTPException(status_code=400, detail="Invalid token payload")
-    
     user = db.query(DbUser).filter(DbUser.user_id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
     return user
 
 
 async def admin_only(current_user: dict = Depends(get_current_user)):
     if current_user.type != 'SysAdmin':
-        raise HTTPException(status_code=403, detail="Permission denied")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Permission denied")
     return current_user
 
 async def enterprise_admin_only(current_user: dict = Depends(get_current_user)):
     if current_user.type != 'EnterpriseAdmin':
-        raise HTTPException(status_code=403, detail="Permission denied")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Permission denied")
     return current_user
 
 async def enterprise_only(current_user: dict = Depends(get_current_user)):
     if current_user.type != 'EnterpriseAdmin' or current_user.type != 'EnterpriseUser':
-        raise HTTPException(status_code=403, detail="Permission denied")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Permission denied")
     return current_user

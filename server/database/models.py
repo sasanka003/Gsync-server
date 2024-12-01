@@ -22,11 +22,11 @@ class DbUser(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     status = Column(Enum('Verified', 'Pending', 'Disabled', name='profile_status'), nullable=False, default='Pending')
     type = Column(Enum('SysAdmin', 'User', 'EnterpriseAdmin', 'EnterpriseUser', name='profile_types'), nullable=False, default='User')
-    enterprise_users = relationship("DbEnterpriseUser", back_populates="admin", foreign_keys="[DbEnterpriseUser.admin_id]")
-    posts = relationship("DbPost", back_populates="user")
-    comments = relationship("DbComment", back_populates="user")
-    votes = relationship("DbVote", back_populates="user")
-    plantations = relationship("DbPlantation", back_populates="user", foreign_keys="[DbPlantation.user_id]")
+    enterprise_users = relationship("DbEnterpriseUser", back_populates="admin", foreign_keys="[DbEnterpriseUser.admin_id]", cascade="all, delete-orphan")
+    posts = relationship("DbPost", back_populates="user", cascade="all, delete-orphan")
+    comments = relationship("DbComment", back_populates="user", cascade="all, delete-orphan")
+    votes = relationship("DbVote", back_populates="user", cascade="all, delete-orphan")
+    plantations = relationship("DbPlantation", back_populates="user", foreign_keys="[DbPlantation.user_id]", cascade="all, delete-orphan")
 
 class DbEnterpriseUser(Base):
     __tablename__ = "enterprise_users"

@@ -70,6 +70,7 @@ def update_plantation(plantation_id: int, db: Session = Depends(get_db), token: 
 
 @router.get("/all", description='get all plantations', response_description="all plantations", response_model=List[PlantationDisplay], responses={404: {"description": "Plantations not found"}})
 def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
+    print(token)
     plantations = db_plantation.get_all_plantations(db)
 
     response = []

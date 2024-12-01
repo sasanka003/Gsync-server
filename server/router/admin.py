@@ -31,8 +31,8 @@ def get_all_gardeners(page: int = Query(1, ge=1), page_size: int = Query(10, ge=
 def remove_gardener(user_id:uuid.UUID, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     if user_id == token.user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot delete yourself")
-    gardener = db_admin.delete_gardener(db,user_id)
-    if gardener == 'ok':
+    gardener = db_admin.delete_gardener(db, user_id)
+    if gardener:
         return {"message": "Gardener deleted successfully"}
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gardener not found")
 
@@ -60,11 +60,11 @@ def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(adm
 
 
 @router.put("/plantations/{plantation_id}/{status}", description='update plantation status', response_description="plantation status updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation_status(plantation_id: int, status: str, db: Session = Depends(get_db), token: dict = Depends(admin_only)): #token: dict = Depends(get_current_user)
-    if status not in ['Unapproved', 'Approved', 'Declined']:
+def update_plantation_status(plantation_id: int, status_value: str, db: Session = Depends(get_db), token: dict = Depends(admin_only)): #token: dict = Depends(get_current_user)
+    if status_value not in ['Unapproved', 'Approved', 'Declined']:
         raise HTTPException(status_code=400, detail="Invalid status")
 
     plantation_status = db_admin.update_plantation_status(db, plantation_id, status)
     if plantation_status:
         return {"message": "Plantation status updated successfully"}
-    return status.HTTP_404_NOT_FOUND
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="plantation status cannot be changed")
