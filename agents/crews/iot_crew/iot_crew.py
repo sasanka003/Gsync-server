@@ -52,4 +52,4 @@ class IotAnalystCrew():
   @after_kickoff
   def after_kickoff_function(self, result):
     print(f"After kickoff function with result: {result}")
-    return result # You can return the result or modify it as needed
+    return result 
