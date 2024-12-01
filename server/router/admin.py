@@ -70,7 +70,7 @@ def update_plantation_status(plantation_id: int, status_value: str, db: Session 
     if status_value not in ['Unapproved', 'Approved', 'Declined']:
         raise HTTPException(status_code=400, detail="Invalid status")
 
-    plantation = db_admin.update_plantation_status(db, plantation_id, request)
+    plantation = db_admin.update_plantation_status(db, plantation_id, status_value)
     if plantation:
         return {"message": "Plantation status updated successfully"}
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="plantation status cannot be changed")
