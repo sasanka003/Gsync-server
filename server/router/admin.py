@@ -66,11 +66,11 @@ def get_plantation(plantation_id: int, db: Session = Depends(get_db),):
     return status.HTTP_404_NOT_FOUND
 
 @router.put("/plantations/{plantation_id}/{status}", description='update plantation status', response_description="plantation status updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation_status(plantation_id: int, status_value: str, db: Session = Depends(get_db), token: dict = Depends(admin_only)): #token: dict = Depends(get_current_user)
-    if status_value not in ['Unapproved', 'Approved', 'Declined']:
+def update_plantation_status(plantation_id: int, request: UpdatePlantationStatus, db: Session = Depends(get_db), token: dict = Depends(admin_only)): #token: dict = Depends(get_current_user)
+    if request.is_approved not in ['Unapproved', 'Approved', 'Declined']:
         raise HTTPException(status_code=400, detail="Invalid status")
 
-    plantation = db_admin.update_plantation_status(db, plantation_id, status_value)
+    plantation = db_admin.update_plantation_status(db, plantation_id, request)
     if plantation:
         return {"message": "Plantation status updated successfully"}
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="plantation status cannot be changed")
