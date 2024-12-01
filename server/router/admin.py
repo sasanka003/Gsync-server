@@ -7,6 +7,7 @@ from auth.authentication import admin_only
 from sqlalchemy.orm import Session
 import uuid
 from database.db_admin import EditGardener, Comment, UpdatePlantationStatus, HelpRequestComment
+from schemas.plantation import PlantationStatus
 
 router = APIRouter(
     prefix='/admin',
@@ -66,11 +67,8 @@ def get_plantation(plantation_id: int, db: Session = Depends(get_db),):
     return status.HTTP_404_NOT_FOUND
 
 @router.put("/plantations/{plantation_id}/{status}", description='update plantation status', response_description="plantation status updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation_status(plantation_id: int, request: UpdatePlantationStatus, db: Session = Depends(get_db), token: dict = Depends(admin_only)): #token: dict = Depends(get_current_user)
-    if request.is_approved not in ['Unapproved', 'Approved', 'Declined']:
-        raise HTTPException(status_code=400, detail="Invalid status")
-
-    plantation = db_admin.update_plantation_status(db, plantation_id, request)
+def update_plantation_status(plantation_id: int, plantation_status: PlantationStatus, request: UpdatePlantationStatus, db: Session = Depends(get_db), token: dict = Depends(admin_only)): #token: dict = Depends(get_current_user)
+    plantation = db_admin.update_plantation_status(db, plantation_id, request, plantation_status)
     if plantation:
         return {"message": "Plantation status updated successfully"}
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="plantation status cannot be changed")

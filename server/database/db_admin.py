@@ -1,3 +1,4 @@
+from enum import Enum
 from database.models import DbUser, DbPlantation, DbPlantationStatus, DbPlantationComments, DbHelpRequest
 from sqlalchemy.orm import Session
 from fastapi import status, HTTPException
@@ -21,7 +22,7 @@ class UpdatePlantationStatus(BaseModel):
     plantation_width: float
     plantation_length: float
     comment: str
-    is_approved: bool
+    is_verified: bool
 
 class HelpRequestComment(BaseModel):
     comment: str
@@ -84,7 +85,7 @@ def get_plantation(db: Session, plantation_id: int):
         .first()
 
 
-def update_plantation_status(db: Session, plantation_id: int, request:UpdatePlantationStatus):
+def update_plantation_status(db: Session, plantation_id: int, request:UpdatePlantationStatus, plantation_status: str):
 
     # Fetch the plantation
     plantation = db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
@@ -95,6 +96,7 @@ def update_plantation_status(db: Session, plantation_id: int, request:UpdatePlan
     # Update plantation dimension
     plantation.plantation_width = request.plantation_width
     plantation.plantation_length = request.plantation_length
+    plantation.verified = request.is_verified
 
     # Fetch the latest status entry for the plantation
     latest_status_entry = db.query(DbPlantationStatus) \
@@ -106,12 +108,12 @@ def update_plantation_status(db: Session, plantation_id: int, request:UpdatePlan
         # If no status exists, create a new one
         status = DbPlantationStatus(
             plantation_id=plantation.plantation_id,
-            status="Approved" if request.is_approved else "Unapproved"
+            status=plantation_status
         )
         db.add(status)
     else:
         # Update the existing status
-        latest_status_entry.status = "Approved" if request.is_approved else "Unapproved"
+        latest_status_entry.status = status
         latest_status_entry.updated_at = func.now()
 
     # Add a comment

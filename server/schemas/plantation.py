@@ -7,6 +7,11 @@ class Subscription(str, Enum):
     Gardener = "Gardener"
     Enterprise = "Enterprise"
 
+class PlantationStatus(str, Enum):
+    Approved = "Approved"
+    Unapproved = "Unapproved" 
+    Declined = "Declined"
+
 class PlantationDisplay(BaseModel):
     plantation_id: int
     name: str
