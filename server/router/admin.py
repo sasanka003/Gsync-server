@@ -9,12 +9,12 @@ import uuid
 from database.db_admin import EditGardener, Comment, UpdatePlantationStatus, HelpRequestComment
 
 router = APIRouter(
-    prefix='/main/admin',
+    prefix='/admin',
     tags=['admin']
 )
 
 @router.get("/gardeners/", description='get all gardeners', response_description="all gardeners", response_model=List[GardenersDisplay], responses={404: {"description": "Gardeners not found"}})
-def get_all_gardeners(page: int = Query(1, ge=1), page_size: int = Query(10, ge=1),db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+def get_all_gardeners(page: int = Query(1, ge=1), page_size: int = Query(10, ge=1),db: Session = Depends(get_db)): #token: dict = Depends(admin_only)
 
     gardeners = db_admin.get_all_gardeners(db, page,page_size)
 
