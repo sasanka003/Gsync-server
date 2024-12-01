@@ -1,6 +1,7 @@
 from database.models import DbUser, DbPlantation, DbPlantationStatus, DbPlantationComments, DbHelpRequest
 from sqlalchemy.orm import Session
 from fastapi import status, HTTPException
+import fastapi
 from sqlalchemy import asc,func
 import uuid
 from pydantic import BaseModel
@@ -89,7 +90,7 @@ def update_plantation_status(db: Session, plantation_id: int, request:UpdatePlan
     plantation = db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
 
     if not plantation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
+        raise HTTPException(status_code=fastapi.status.HTTP_404_NOT_FOUND, detail="Plantation not found")
 
     # Update plantation dimension
     plantation.plantation_width = request.plantation_width
