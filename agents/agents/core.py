@@ -28,7 +28,7 @@ Maintian a informative tone in your replies and provide users with clear and con
 
 research_agent = Agent(
     name="Research Agent",
-    description=prompt,
+    introduction=prompt,
     task=tasks,
     model=OpenAIChat(id="gpt-4o"),
     tools=[DuckDuckGo(), ArxivToolkit()],
@@ -38,6 +38,11 @@ research_agent = Agent(
         "the provided answer should be focused on Srilanka", 
         "research using arxiv if user asks for indepth information or if web research insufficient",
         "provide sufficient guidance for treatment of plant diseases/ pest control or basic gardening if asked."
+    ],
+    guidelines=[
+        "Make sure your collected data is related to Srilanka, or generally applicable",
+        "Make sure your final answer is related to Srilanka, or generally applicable",
+        "Make sure to think through the facts as much as possible."
     ],
     show_tool_calls=True,
     markdown=True,
