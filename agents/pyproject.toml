@@ -25,4 +25,6 @@ dependencies = [
     "unstructured>=0.16.8",
     "crewai[tools]>=0.83.0",
     "markdown>=3.7",
+    "aiosmtplib>=3.0.2",
+    "pydantic-settings>=2.6.1",
 ]

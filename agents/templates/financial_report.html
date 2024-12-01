@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background-color: #007BFF;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .body-content {
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+    /* Markdown Styles */
+    .body-content h1, .body-content h2, .body-content h3 {
+      color: #007BFF;
+    }
+    .body-content h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .body-content h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .body-content p {
+      margin: 10px 0;
+    }
+    .body-content ul {
+      list-style-type: disc;
+      margin: 10px 20px;
+      padding-left: 20px;
+    }
+    .body-content li {
+      margin: 5px 0;
+    }
+    .body-content strong {
+      font-weight: bold;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Financial Report</h1>
+    </div>
+    <div class="body-content">
+      <!-- The Markdown content will be inserted here as HTML -->
+      {{ markdown_content }}
+    </div>
+    <div class="footer">
+      <p>&copy; 2024 GSYNC. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

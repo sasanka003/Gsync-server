@@ -1,6 +1,7 @@
 import random
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_mail import MessageSchema
 import logfire
 import uvicorn
 from agents.rag import rag_agent
@@ -8,8 +9,9 @@ from agents.core import research_agent
 from crew import parse_agricultural_data
 from crews.enterprise_crew.enterprise_crew import EnterpriseAnalystCrew
 from crews.iot_crew.iot_crew import IotAnalystCrew
+from services import fm
 
-logfire.configure(project_name='gsync-assistant')
+logfire.configure()
 
 app = FastAPI(
     title="Gsync Assistant",
@@ -56,18 +58,31 @@ def chat_rag(query: str = Query(...)):
 
 
 @app.get('/chat/enterprise/admin')
-def chat_ent_admin():
+async def chat_ent_admin(background_task: BackgroundTasks):
     var_dict = parse_agricultural_data()
 
-    result = EnterpriseAnalystCrew().crew().kickoff(
-        inputs={
-            "client_name": var_dict["farm_name"],
-            "location": var_dict["farm_location"],
-            "crop_list": var_dict["crop_yields"],
-            "finance_data": f"operational costs: {var_dict["operational_costs"]}, revenue: {var_dict["revenue"]}, market_info: {var_dict["market_info"]}"
-        }
-    )
-    return {"message": result}
+    try:
+        result = EnterpriseAnalystCrew().crew().kickoff(
+            inputs={
+                "client_name": var_dict["farm_name"],
+                "location": var_dict["farm_location"],
+                "crop_list": var_dict["crop_yields"],
+                "finance_data": f"operational costs: {var_dict["operational_costs"]}, revenue: {var_dict["revenue"]}, market_info: {var_dict["market_info"]}"
+            }
+        )
+        
+        message = MessageSchema(
+            subject="AI Agent generated Finacial report",
+            recipients=["visithkumarapperuma@gmail.com"],
+            template_body={"markdown_content": result},
+            subtype="html"
+        )
+
+        background_task.add_task(fm.send_message, message, template_name="financial_report.html")
+        return {"message": f"Your financial report: {result}"}
+    except:
+        return {"message": "You have already reached the limit for your Quarterly financial analysis Generation, Contact Gsync customer service for extension."}
+
 
 @app.get('/chat/iot')
 def chat_ent_user():
