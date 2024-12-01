@@ -27,6 +27,7 @@ class DbUser(Base):
     comments = relationship("DbComment", back_populates="user", cascade="all, delete-orphan")
     votes = relationship("DbVote", back_populates="user", cascade="all, delete-orphan")
     plantations = relationship("DbPlantation", back_populates="user", foreign_keys="[DbPlantation.user_id]", cascade="all, delete-orphan")
+    help_requests = relationship("DbHelpRequest", back_populates="user")
 
 class DbEnterpriseUser(Base):
     __tablename__ = "enterprise_users"
