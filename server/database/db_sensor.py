@@ -1,7 +1,8 @@
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound, SQLAlchemyError
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from database.models import DbSensor, DbSensorImage
+from sqlalchemy import desc
+from database.models import DbSensor, DbSensorImage, DbSensorData, DbPlantation
 from database.database import supabase
 from fastapi import status, HTTPException, UploadFile, File
 from datetime import datetime
@@ -17,6 +18,22 @@ class SensorBase(BaseModel):
 class SensorDisplay(BaseModel):
     sensor_id: int
     plantation_id: int
+
+class SensorData(BaseModel):
+    sensor_id: int
+    temperature: float
+    humidity: float
+    nh3_level: float
+    co2_level: float
+
+class SensorDataDisplay(BaseModel):
+    sensor_id: int
+    temperature: float
+    humidity: float
+    nh3_level: float
+    co2_level: float
+    created_at: datetime
+    image_url: str
 
 # Response Model for Retrieving Image Data
 class ImageResponse(BaseModel):
@@ -84,6 +101,40 @@ def get_image(db: Session, image_id: int):
         print(f"Error: {e}")
     except MultipleResultsFound as e:
         print(f"Error: More than one result found for ID {image_id}")
+    except SQLAlchemyError as e:
+        print(f"Database error occurred: {e}")
+    return None
+
+async def add_sensor_data(db: Session, request: SensorData):
+    new_data = DbSensorData(
+        sensor_id=request.sensor_id,
+        temperature=request.temperature,
+        humidity=request.humidity,
+        nh3_level=request.nh3_level,
+        co2_level=request.co2_level
+    )
+    db.add(new_data)
+    db.commit()
+    db.refresh(new_data)
+    return new_data
+
+
+async def get_sensor_data(db: Session, sensor_id: int, plantation_id: int):
+    try:
+        sensor = db.query(DbSensor).filter(DbSensor.sensor_id == sensor_id).first()
+        if sensor is None:
+            raise NoResultFound(f"No result found for sensor id {sensor_id}")
+        if sensor.plantation_id != plantation_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized access to sensor data")
+        
+        response = db.query(DbSensorData).filter(DbSensorData.sensor_id == sensor_id).order_by(desc(DbSensorData.created_at)).first()
+        if response is None:
+            raise NoResultFound(f"No result found for sensor id {sensor_id}")
+        return response
+    except NoResultFound as e:
+        print(f"Error: {e}")
+    except MultipleResultsFound as e:
+        print(f"Error: More than one result found for sensor ID {sensor_id}")
     except SQLAlchemyError as e:
         print(f"Database error occurred: {e}")
     return None
