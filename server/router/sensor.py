@@ -39,3 +39,7 @@ async def add_sensor_data(
     db: Session = Depends(get_db)
 ):
     return await db_sensor.add_sensor_data(db, request)
+
+@router.get('/get_data/{plantation_id}/{sensor_id}', description="get sensor data", response_model=SensorData)
+async def get_sensor_data(sensor_id: int, plantation_id: int, db: Session = Depends(get_db)):
+    return await db_sensor.get_sensor_data(db, sensor_id, plantation_id)
