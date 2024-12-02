@@ -103,7 +103,6 @@ class DbVote(Base):
     post = relationship("DbPost", back_populates="votes")
     comment = relationship("DbComment", back_populates="votes")
 
-
 class DbPlantation(Base):
     __tablename__ = "plantation"
     plantation_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -121,16 +120,19 @@ class DbPlantation(Base):
     user = relationship("DbUser", back_populates="plantations")
     statuses = relationship("DbPlantationStatus", back_populates="plantation")
     user_access = relationship("DbPlantationAccess", back_populates="plantation", cascade="all, delete-orphan")
+    sensors = relationship("DbSensor", back_populates="plantation", cascade="all, delete-orphan")
 
+#status can change from unapproved to approved or declined
 class DbPlantationStatus(Base):
     __tablename__ = "plantation_statuses"
     id = Column(Integer, primary_key=True, autoincrement=True)
     plantation_id = Column(Integer, ForeignKey('plantation.plantation_id'), nullable=False)
     status = Column(Enum('Unapproved', 'Approved', 'Declined', name="plantation_status_types"), nullable=False, default='Unapproved')
+    comment = Column(Text, nullable=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
     plantation = relationship("DbPlantation", back_populates="statuses")
 
-
+# grant access to gardeeres in enterprises
 class DbPlantationAccess(Base):
     __tablename__ = "plantation_access"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -143,7 +145,7 @@ class DbSensor(Base):
     __tablename__ = "sensors"
     sensor_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     plantation_id = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
-    # plantation = relationship("DbPlantation", back_populates="sensors")
+    plantation = relationship("DbPlantation", back_populates="sensors")
 
 class DbSensorImage(Base):
     __tablename__ = "sensor_images"
@@ -159,6 +161,7 @@ class DbSensorData(Base):
     sensor_id = Column(Integer, ForeignKey("sensors.sensor_id"), nullable=False)
     # sensor = relationship("DbSensor", back_populates="data")
     temperature = Column(Float, nullable=False)
-    soil_moisture = Column(Float, nullable=False)
-    # other sensor data
+    humidity = Column(Float, nullable=False)
+    nh3_level= Column(Float, nullable=False)
+    co2_level = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

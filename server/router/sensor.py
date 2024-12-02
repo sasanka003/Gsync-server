@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from database import db_sensor
 from database.database import get_db
-from database.db_sensor import ImageResponse, SensorBase, SensorDisplay
+from database.db_sensor import ImageResponse, SensorBase, SensorDisplay, SensorData
 from auth.authentication import verify_token, get_current_user
 
 router = APIRouter(
@@ -29,3 +29,10 @@ async def upload_sensor_image(
 @router.get('/get_image/{image_id}', response_model=ImageResponse)
 async def get_sensor_image(image_id: int, db: Session = Depends(get_db)):
     return db_sensor.get_images(db, image_id)
+
+@router.post('/add_data', description="add sensor data", response_model=SensorData, deprecated=True)
+async def add_sensor_data(
+    request: SensorData,
+    db: Session = Depends(get_db)
+):
+    return await db_sensor.add_sensor_data(db, request)

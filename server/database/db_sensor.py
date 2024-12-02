@@ -1,7 +1,7 @@
 from pydantic.types import UUID
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from database.models import DbSensor, DbSensorImage
+from database.models import DbSensor, DbSensorImage, DbSensorData
 from database.database import supabase
 from fastapi import status, HTTPException, UploadFile, File
 from datetime import datetime
@@ -17,6 +17,13 @@ class SensorBase(BaseModel):
 class SensorDisplay(BaseModel):
     sensor_id: int
     plantation_id: int
+
+class SensorData(BaseModel):
+    sensor_id: int
+    temperature: float
+    humidity: float
+    nh3_level: float
+    co2_level: float
 
 # Response Model for Retrieving Image Data
 class ImageResponse(BaseModel):
@@ -76,3 +83,16 @@ async def upload_image(db: Session, file: UploadFile, sensor_id: uuid):
 
 def get_image(db: Session, image_id: int):
     return db.query(DbSensorImage).filter(DbSensorImage.image_id == image_id).first()
+
+async def add_sensor_data(db: Session, request: SensorData):
+    new_data = DbSensorData(
+        sensor_id=request.sensor_id,
+        temperature=request.temperature,
+        humidity=request.humidity,
+        nh3_level=request.nh3_level,
+        co2_level=request.co2_level
+    )
+    db.add(new_data)
+    db.commit()
+    db.refresh(new_data)
+    return new_data
