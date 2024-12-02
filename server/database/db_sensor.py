@@ -1,4 +1,4 @@
-from pydantic.types import UUID
+from sqlalchemy.exc import NoResultFound, MultipleResultsFound, SQLAlchemyError
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database.models import DbSensor, DbSensorImage, DbSensorData
@@ -27,11 +27,11 @@ class SensorData(BaseModel):
 
 # Response Model for Retrieving Image Data
 class ImageResponse(BaseModel):
-    id: UUID = Field(..., description="Unique identifier of the image record")
-    media_url: str = Field(..., description="URL of the image media")
+    image_id: int = Field(..., description="Unique identifier of the image record")
+    image_url: str = Field(..., description="URL of the image media")
     sensor_id: int = Field(..., description="ID of the sensor")
     plantation_id: int = Field(..., description="ID of the plantation")
-    timestamp: datetime = Field(..., description="Timestamp of the image capture")
+    created_at: datetime = Field(..., description="Timestamp of the image capture")
 
 async def add_sensor(db: Session, request: SensorBase):
     new_sensor = DbSensor(
@@ -67,10 +67,10 @@ async def upload_image(db: Session, file: UploadFile, sensor_id: uuid):
 
     # Save the image to the database
     new_image = DbSensorImage(
-        media_url=file_url,
+        image_url=file_url,
         sensor_id=sensor_id,
         plantation_id=sensor.plantation_id,
-        created_at=datetime.datetime.now()
+        created_at=datetime.now()
     )
     db.add(new_image)
     db.commit()
@@ -82,7 +82,18 @@ async def upload_image(db: Session, file: UploadFile, sensor_id: uuid):
 #     return db.query(DbSensorImage).all()
 
 def get_image(db: Session, image_id: int):
-    return db.query(DbSensorImage).filter(DbSensorImage.image_id == image_id).first()
+    try:
+        item = db.query(DbSensorImage).filter(DbSensorImage.image_id == image_id).first()
+        if item is None:
+            raise NoResultFound(f"No result found for image id {image_id}")
+        return item 
+    except NoResultFound as e:
+        print(f"Error: {e}")
+    except MultipleResultsFound as e:
+        print(f"Error: More than one result found for ID {image_id}")
+    except SQLAlchemyError as e:
+        print(f"Database error occurred: {e}")
+    return None
 
 async def add_sensor_data(db: Session, request: SensorData):
     new_data = DbSensorData(

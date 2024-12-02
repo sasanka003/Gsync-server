@@ -30,7 +30,8 @@ share/python-wheels/
 MANIFEST
 
 
-venv
+
 .idea
 .pytest_cache
 .logfire
+.vscode

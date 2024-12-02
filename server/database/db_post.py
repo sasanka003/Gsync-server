@@ -62,7 +62,8 @@ async def create(db: Session, title: str, content: str, post_type: PostType, use
             raise HTTPException(status_code=response.status_code, detail=response.json())
 
         # Extract the file URL from the response
-        file_url = response.json().get('Key')
+        file_url_response = supabase.storage.from_('post_img').get_public_url(file_name)
+        file_url = file_url_response.get('publicURL')
 
         if not file_url:
             raise HTTPException(status_code=500, detail="Failed to retrieve file URL from the response")

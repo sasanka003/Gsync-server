@@ -22,11 +22,12 @@ class DbUser(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     status = Column(Enum('Verified', 'Pending', 'Disabled', name='profile_status'), nullable=False, default='Pending')
     type = Column(Enum('SysAdmin', 'User', 'EnterpriseAdmin', 'EnterpriseUser', name='profile_types'), nullable=False, default='User')
-    enterprise_users = relationship("DbEnterpriseUser", back_populates="admin", foreign_keys="[DbEnterpriseUser.admin_id]")
-    posts = relationship("DbPost", back_populates="user")
-    comments = relationship("DbComment", back_populates="user")
-    votes = relationship("DbVote", back_populates="user")
-    plantations = relationship("DbPlantation", back_populates="user", foreign_keys="[DbPlantation.user_id]")
+    enterprise_users = relationship("DbEnterpriseUser", back_populates="admin", foreign_keys="[DbEnterpriseUser.admin_id]", cascade="all, delete-orphan")
+    posts = relationship("DbPost", back_populates="user", cascade="all, delete-orphan")
+    comments = relationship("DbComment", back_populates="user", cascade="all, delete-orphan")
+    votes = relationship("DbVote", back_populates="user", cascade="all, delete-orphan")
+    plantations = relationship("DbPlantation", back_populates="user", foreign_keys="[DbPlantation.user_id]", cascade="all, delete-orphan")
+    help_requests = relationship("DbHelpRequest", back_populates="user")
 
 class DbEnterpriseUser(Base):
     __tablename__ = "enterprise_users"
@@ -121,6 +122,7 @@ class DbPlantation(Base):
     statuses = relationship("DbPlantationStatus", back_populates="plantation")
     user_access = relationship("DbPlantationAccess", back_populates="plantation", cascade="all, delete-orphan")
     sensors = relationship("DbSensor", back_populates="plantation", cascade="all, delete-orphan")
+    comments = relationship("DbPlantationComments", back_populates="plantation")
 
 #status can change from unapproved to approved or declined
 class DbPlantationStatus(Base):
@@ -141,6 +143,13 @@ class DbPlantationAccess(Base):
     user = relationship("DbEnterpriseUser", back_populates="plantation_access")
     plantation = relationship("DbPlantation", back_populates="user_access")
 
+class DbPlantationComments(Base):
+    __tablename__ = "plantation_comment"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    plantation_id = Column(Integer, ForeignKey('plantation.plantation_id'), nullable=False)
+    comment = Column(Text)
+    plantation = relationship("DbPlantation", back_populates="comments")
+
 class DbSensor(Base):
     __tablename__ = "sensors"
     sensor_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -154,6 +163,7 @@ class DbSensorImage(Base):
     sensor_id = Column(Integer, ForeignKey("sensors.sensor_id"), nullable=False)
     # sensor = relationship("DbSensor", back_populates="images")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    plantation_id  = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
 
 class DbSensorData(Base):
     __tablename__ = "sensor_data"
@@ -165,3 +175,13 @@ class DbSensorData(Base):
     nh3_level= Column(Float, nullable=False)
     co2_level = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class DbHelpRequest(Base):
+    __tablename__ = "help_request"
+    help_request_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    subject = Column(Text, nullable=False)
+    message = Column(Text, nullable=False)
+    createdAt = Column(DateTime(timezone=True), server_default=func.now())
+    comment = Column(String)
+    user_id = Column(UUID, ForeignKey("profiles.user_id"))
+    user = relationship("DbUser", back_populates="help_requests")

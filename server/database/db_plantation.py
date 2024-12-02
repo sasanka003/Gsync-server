@@ -56,7 +56,7 @@ def get_all_plantations(db: Session):
 def get_plantation(db: Session, plantation_id: int):
     return db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
 
-def get_user_plantations(db: Session, user_id: int):
+def get_user_plantations(db: Session, user_id: UUID):
     return db.query(DbPlantation).filter(DbPlantation.user_id == user_id).all()
 
 def get_user_plantation_count(db: Session, user_id: int):

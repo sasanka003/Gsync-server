@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 import uuid
 from datetime import datetime
+from typing import Optional
+
 
 class GardenersDisplay(BaseModel):
     user_id: uuid.UUID
@@ -10,12 +12,36 @@ class GardenersDisplay(BaseModel):
     class Config:
         from_attributes = True
 
-class PlantationDisplay(BaseModel):
+class PlantationRequestDisplay(BaseModel):
     plantation_id: int
     type:str
-    user_id: uuid.UUID
+    #user_id: uuid.UUID
+    name: str
     city: str # location
     createdAt:datetime
     status: str
+    class Config:
+        from_attributes = True
+
+class PlantationDisplay(BaseModel):
+    plantation_id: int
+    plantation_name: str
+    type: str
+    user_name: str
+    city: str
+    province: str
+    country: str
+    plantation_width : float
+    plantation_length : float
+    class Config:
+        from_attributes = True
+
+class HelpRequestDisplay(BaseModel):
+    help_request_id: int
+    subject: str
+    message: str
+    createdAt: datetime
+    name: str
+    type: str
     class Config:
         from_attributes = True

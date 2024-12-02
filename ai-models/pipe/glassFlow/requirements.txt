@@ -1,0 +1,8 @@
+glassflow>=2.0.6
+ipykernel>=6.29.5
+openai>=1.55.3
+opencv-python>=4.10.0.84
+phidata>=2.5.33
+pydantic>=2.10.2
+python-dotenv>=1.0.1
+supabase>=2.10.0

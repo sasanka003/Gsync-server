@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
 from typing import Optional
 from database import db_sensor
@@ -28,7 +28,10 @@ async def upload_sensor_image(
 
 @router.get('/get_image/{image_id}', response_model=ImageResponse)
 async def get_sensor_image(image_id: int, db: Session = Depends(get_db)):
-    return db_sensor.get_images(db, image_id)
+    item = db_sensor.get_image(db, image_id)
+    if item == None:
+        raise status.HTTP_404_NOT_FOUND
+    return item
 
 @router.post('/add_data', description="add sensor data", response_model=SensorData, deprecated=True)
 async def add_sensor_data(
