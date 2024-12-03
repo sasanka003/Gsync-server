@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Query, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Form, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from database import db_sensor
+from database import db_sensor, db_plantation
 from database.database import get_db
 from database.db_sensor import ImageResponse, SensorBase, SensorDisplay, SensorData
 from auth.authentication import verify_token, get_current_user
@@ -18,7 +18,7 @@ async def add_sensor(
 ):
     return await db_sensor.add_sensor(db, request)
 
-@router.post('/save_image', description="save camera image from sensor kit", response_model=ImageResponse)
+@router.post('/save_image', description="save camera image from sensor kit", response_model=ImageResponse, deprecated=True)
 async def upload_sensor_image(
     file: UploadFile = File(...),
     sensor_id: int = Form(...),
@@ -41,7 +41,18 @@ async def add_sensor_data(
     return await db_sensor.add_sensor_data(db, request)
 
 @router.get('/get_data/{plantation_id}/{sensor_id}', description="get sensor data", response_model=SensorData)
-async def get_sensor_data(sensor_id: int, plantation_id: int, db: Session = Depends(get_db)):
+async def get_sensor_data(
+    sensor_id: int,
+    plantation_id: int,
+    db: Session = Depends(get_db),
+    token: dict = Depends(get_current_user)
+):
+    user_plantation = db_plantation.get_user_plantations(db, token.user_id)
+    if user_plantation.plantation_id!=plantation_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Unauthorized."
+        )
     return await db_sensor.get_sensor_data(db, sensor_id, plantation_id)
 
 @router.get("/multiple_data/{plantation_id}/{sensor_id}")
@@ -49,9 +60,8 @@ async def fetch_multiple_sensor_data(
     sensor_id: int,
     plantation_id: int,
     time_period: str,
-    limit: int = Query(10, gt=1, le=100, description="post limit per req."), 
-    offset: int = Query(0, ge=0, description="post offset in current request."), 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    token: dict = Depends(get_current_user)
 ):
     """
     Fetch sensor data for multiple sensors within a specified time period.
@@ -60,4 +70,10 @@ async def fetch_multiple_sensor_data(
     - plantation_id: Plantation ID for authorization.
     - time_period: One of ['last_day', 'last_week', 'last_month', 'last_year'].
     """
-    return await db_sensor.get_multiple_sensors_data(db, sensor_id, plantation_id, time_period, limit=limit, offset=offset)
+    user_plantation = db_plantation.get_user_plantations(db, token.user_id)
+    if user_plantation.plantation_id!=plantation_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Unauthorized."
+        )
+    return await db_sensor.get_multiple_sensors_data(db, sensor_id, plantation_id, time_period)
