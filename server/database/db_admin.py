@@ -61,10 +61,7 @@ def edit_gardener(db: Session, user_id: uuid.UUID, request:EditGardener):
 # Get all plantation requests
 def get_all_plantations(db: Session):
 
-    result = db.query(DbPlantation.plantation_id, DbPlantation.type, DbUser.name, DbPlantation.city, DbPlantation.createdAt, DbPlantationStatus.status) \
-        .join(DbPlantationStatus,DbPlantation.plantation_id == DbPlantationStatus.plantation_id) \
-        .join(DbUser, DbPlantation.user_id == DbUser.user_id) \
-        .all()
+    result = db.query(DbPlantation).all()
     return result
 
 def get_plantation(db: Session, plantation_id: int):
