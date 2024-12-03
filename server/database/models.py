@@ -186,3 +186,14 @@ class DbHelpRequest(Base):
     comment = Column(String)
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     user = relationship("DbUser", back_populates="help_requests")
+
+class DbPredictions(Base):
+    __tablename__ = "predictions"
+    image_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    sensor_id = Column(Integer, ForeignKey("sensors.sensor_id"), nullable=False)
+    plantation_id = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
+    prediction_details = Column(Text, nullable=False)
+    pest = Column(Boolean, nullable=False)
+    weed = Column(Boolean, nullable=False)
+    disease = Column(Boolean, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
