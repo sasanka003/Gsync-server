@@ -44,7 +44,7 @@ async def add_sensor_data(
 async def get_sensor_data(sensor_id: int, plantation_id: int, db: Session = Depends(get_db)):
     return await db_sensor.get_sensor_data(db, sensor_id, plantation_id)
 
-@router.get("/multiple_data")
+@router.get("/multiple_data/{plantation_id}/{sensor_id}")
 async def fetch_multiple_sensor_data(
     sensor_id: int,
     plantation_id: int,
