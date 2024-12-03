@@ -44,7 +44,7 @@ def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(adm
     response = []
     if plantations:
         for plantation in plantations:
-            response.append(PlantationRequestDisplay.model_validate(plantation))
+            response.append(PlantationDisplay.model_validate(plantation))
         return response
 
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plantation not found")
