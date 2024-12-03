@@ -43,3 +43,19 @@ async def add_sensor_data(
 @router.get('/get_data/{plantation_id}/{sensor_id}', description="get sensor data", response_model=SensorData)
 async def get_sensor_data(sensor_id: int, plantation_id: int, db: Session = Depends(get_db)):
     return await db_sensor.get_sensor_data(db, sensor_id, plantation_id)
+
+@router.get("/multiple_data")
+async def fetch_multiple_sensor_data(
+    sensor_id: int,
+    plantation_id: int,
+    time_period: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Fetch sensor data for multiple sensors within a specified time period.
+    Args:
+    - sensor_ids: List of sensor IDs to fetch data for.
+    - plantation_id: Plantation ID for authorization.
+    - time_period: One of ['last_day', 'last_week', 'last_month', 'last_year'].
+    """
+    return await db_sensor.get_multiple_sensors_data(db, sensor_id, plantation_id, time_period)
