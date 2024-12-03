@@ -63,7 +63,7 @@ def chat_research(query: str = Query(...)):
         return JsonOutput(output="not available right now")
 
 
-@app.get('chat/rag', response_model=JsonOutput)
+@app.get('/chat/rag', response_model=JsonOutput)
 def chat_rag(query: str = Query(...)):
     try:
         rag_results = rag_agent.run(
@@ -104,13 +104,11 @@ async def chat_ent_admin(background_task: BackgroundTasks):
 @app.get('/chat/iot', response_model=JsonOutput)
 def chat_ent_user():
     iot_data = generate_plant_data()
-    try:
-        result = IotAnalystCrew().crew().kickoff(inputs={
-            "plant_data": iot_data
-        })
-        return JsonOutput(output=result)
-    except:
-        return JsonOutput(output="iot analysis waiting in queue, sending via email.")
+    result = IotAnalystCrew().crew().kickoff(inputs={
+        "plant_data": iot_data
+    })
+    return JsonOutput(output=f"your cultivation report: {result}")
+
 
 
 if __name__ == "__main__":
