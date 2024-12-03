@@ -83,7 +83,7 @@ async def create(db: Session, title: str, content: str, post_type: PostType, use
     return new_post
 
 def get_all(db: Session):
-  return db.query(DbPost).all()
+  return db.query(DbPost).order_by(DbPost.created_at.desc()).all()
 
 
 def get_top_posts_query(db: Session):
