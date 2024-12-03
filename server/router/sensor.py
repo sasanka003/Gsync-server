@@ -49,6 +49,8 @@ async def fetch_multiple_sensor_data(
     sensor_id: int,
     plantation_id: int,
     time_period: str,
+    limit: int = Query(10, gt=1, le=100, description="post limit per req."), 
+    offset: int = Query(0, ge=0, description="post offset in current request."), 
     db: Session = Depends(get_db)
 ):
     """
@@ -58,4 +60,4 @@ async def fetch_multiple_sensor_data(
     - plantation_id: Plantation ID for authorization.
     - time_period: One of ['last_day', 'last_week', 'last_month', 'last_year'].
     """
-    return await db_sensor.get_multiple_sensors_data(db, sensor_id, plantation_id, time_period)
+    return await db_sensor.get_multiple_sensors_data(db, sensor_id, plantation_id, time_period, limit=limit, offset=offset)

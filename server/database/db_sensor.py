@@ -139,7 +139,7 @@ async def get_sensor_data(db: Session, sensor_id: int, plantation_id: int):
         print(f"Database error occurred: {e}")
     return None
 
-async def get_multiple_sensors_data(db: Session, sensor_id: int, plantation_id: int, time_period: str):
+async def get_multiple_sensors_data(db: Session, sensor_id: int, plantation_id: int, time_period: str, limit: int = 10, offset: int = 0):
     try:
         # Define time boundaries based on the requested period
         now = datetime.utcnow()
@@ -176,7 +176,7 @@ async def get_multiple_sensors_data(db: Session, sensor_id: int, plantation_id: 
                 )
             )
             .order_by(DbSensorData.created_at.desc())
-            .all()
+            .limit(limit).offset(offset).all()
         )
 
         if not sensor_data:
