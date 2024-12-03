@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, status,Query,HTTPException
 from typing import Optional, List
 from database.database import get_db
 from database import db_admin, db_plantation
-from schemas.admin import GardenersDisplay, PlantationDisplay, PlantationRequestDisplay, HelpRequestDisplay
+from schemas.admin import GardenersDisplay, PlantationRequestDisplay, HelpRequestDisplay
+from schemas.plantation import PlantationDisplay
 from auth.authentication import admin_only
 from sqlalchemy.orm import Session
 import uuid
@@ -36,7 +37,7 @@ def get_help_request(help_request_id:int, db: Session = Depends(get_db), token: 
 
 
 # Get all plantation requests
-@router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationRequestDisplay], responses={404: {"description": "Plantations not found"}})
+@router.get("/plantations", description='get all plantations', response_description="all plantations", response_model=List[PlantationDisplay], responses={404: {"description": "Plantations not found"}})
 def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     plantations = db_admin.get_all_plantations(db)
 
