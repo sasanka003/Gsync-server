@@ -113,7 +113,7 @@ def delete_plantation(plantation_id: int, db: Session = Depends(get_db), token: 
 
 
 @router.put("/user_status/{plantation_id}/{verified}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation(plantation_id: int, verified: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+def update_user_status(plantation_id: int, verified: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     plantation = db_plantation.update_plantation_status(db, plantation_id, verified=True)
     if not plantation:
         raise HTTPException(status_code=404, detail="Plantation not found")
@@ -127,7 +127,7 @@ def update_plantation(plantation_id: int, verified: bool, db: Session = Depends(
     return {"message": "Plantation verified successfully", "sensor_id": sensor_id}
 
 @router.put("/payment_status/{plantation_id}/{payment_status}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation(plantation_id: int, payment_status: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+def update_payment_status(plantation_id: int, payment_status: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     plantation = db_plantation.update_plantation_status(db, plantation_id, payment_status=True)
     if plantation:
         return {"message": "Plantation verified successfully"}
