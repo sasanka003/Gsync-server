@@ -1,11 +1,11 @@
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound, SQLAlchemyError
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, and_
 from database.models import DbSensor, DbSensorImage, DbSensorData, DbPlantation
 from database.database import supabase
 from fastapi import status, HTTPException, UploadFile, File
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 from pydantic import BaseModel, Field
 import uuid
@@ -138,3 +138,51 @@ async def get_sensor_data(db: Session, sensor_id: int, plantation_id: int):
     except SQLAlchemyError as e:
         print(f"Database error occurred: {e}")
     return None
+
+async def get_multiple_sensors_data(db: Session, sensor_id: int, plantation_id: int, time_period: str, limit: int = 10, offset: int = 0):
+    try:
+        # Define time boundaries based on the requested period
+        now = datetime.utcnow()
+        if time_period == "last_day":
+            start_time = now - timedelta(days=1)
+        elif time_period == "last_week":
+            start_time = now - timedelta(weeks=1)
+        elif time_period == "last_month":
+            start_time = now - timedelta(days=30)
+        elif time_period == "last_year":
+            start_time = now - timedelta(days=365)
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid time period")
+
+        # Filter sensors
+        sensor = db.query(DbSensor).filter(DbSensor.sensor_id == sensor_id).first()
+        if not sensor:
+            raise NoResultFound("Sensors not found for the sensor id {sensor_id}")
+
+        # Verify plantation ID
+        if sensor.plantation_id != plantation_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Unauthorized access to sensor ID {sensor.sensor_id}"
+            )
+
+        # Query sensor data within the time period
+        sensor_data = (
+            db.query(DbSensorData)
+            .filter(
+                and_(
+                    DbSensorData.sensor_id == sensor_id,
+                    DbSensorData.created_at >= start_time,
+                )
+            )
+            .order_by(DbSensorData.created_at.desc())
+            .limit(limit).offset(offset).all()
+        )
+
+        if not sensor_data:
+            raise NoResultFound("No data found for the provided sensors and time period")
+
+        return sensor_data
+
+    except NoResultFound as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

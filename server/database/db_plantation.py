@@ -4,39 +4,15 @@ from sqlalchemy.orm import Session
 from database.models import DbPlantation
 from fastapi import status, HTTPException
 from enum import Enum
-
-
-class Location(BaseModel):
-    city: str
-    province: str
-    region: str
-
-class Area(BaseModel):
-    length: float
-    width: float
-
-# create Enum for subscription
-class Subscription(str, Enum):
-    Basic = "Basic"
-    Gardener = "Gardener"
-    Enterprise = "Enterprise"
-
-
-class UserPlantation(BaseModel):
-    user_id: UUID
-    name: str
-    type: str
-    location: Location
-    area: Area
-    subscription: Subscription
-
+from schemas.plantation import UserPlantation
 
 
 def create_plantation(db: Session, request: UserPlantation):
     new_plantation = DbPlantation(
         user_id=request.user_id,
         name=request.name,
-        type=request.type,
+        plant_type=request.plant_type,
+        plantation_type=request.plantation_type,
         city=request.location.city,
         province=request.location.province,
         country=request.location.region,
@@ -73,11 +49,20 @@ def delete_plantation(db: Session, plantation_id: int):
     return 'ok'
 
 
-def update_plantation_status(db: Session, plantation_id: int):
+def update_plantation_status(db: Session, plantation_id: int, verified: bool):
     plantation = db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
     if not plantation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Plantation with {plantation_id} not found")
-    plantation.verified = True
+    plantation.verified = verified
+    db.commit()
+    db.refresh(plantation)
+    return plantation
+
+def update_payment_status(db: Session, plantation_id: int, payment_status: bool):
+    plantation = db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
+    if not plantation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Plantation with {plantation_id} not found")
+    plantation.payment_status = payment_status
     db.commit()
     db.refresh(plantation)
     return plantation

@@ -108,7 +108,8 @@ class DbPlantation(Base):
     __tablename__ = "plantation"
     plantation_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(Text, nullable=False)
-    type = Column(String, nullable=False)
+    plant_type = Column(Enum('Tomato', 'Bell_pepper', 'Capsicum', name="plant_types"), nullable=False)
+    plantation_type = Column(Enum('Indoor', 'Outdoor', name="plantation_types"), nullable=False)
     city = Column(Text, nullable=False)
     province = Column(Text)
     country = Column(Text, nullable=False, default="Srilanka")
@@ -118,6 +119,7 @@ class DbPlantation(Base):
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     user_id = Column(UUID(as_uuid=True), ForeignKey("profiles.user_id"), nullable=False)
     verified = Column(Boolean, default=False)
+    payment_status = Column(Boolean, default=False)
     user = relationship("DbUser", back_populates="plantations")
     statuses = relationship("DbPlantationStatus", back_populates="plantation")
     user_access = relationship("DbPlantationAccess", back_populates="plantation", cascade="all, delete-orphan")
@@ -185,3 +187,14 @@ class DbHelpRequest(Base):
     comment = Column(String)
     user_id = Column(UUID, ForeignKey("profiles.user_id"))
     user = relationship("DbUser", back_populates="help_requests")
+
+class DbPredictions(Base):
+    __tablename__ = "predictions"
+    image_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    sensor_id = Column(Integer, ForeignKey("sensors.sensor_id"), nullable=False)
+    plantation_id = Column(Integer, ForeignKey("plantation.plantation_id"), nullable=False)
+    prediction_details = Column(Text, nullable=False)
+    pest = Column(Boolean, nullable=False)
+    weed = Column(Boolean, nullable=False)
+    disease = Column(Boolean, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
