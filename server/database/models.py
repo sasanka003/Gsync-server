@@ -119,6 +119,7 @@ class DbPlantation(Base):
     createdAt = Column(DateTime(timezone=True), server_default=func.now())
     user_id = Column(UUID(as_uuid=True), ForeignKey("profiles.user_id"), nullable=False)
     verified = Column(Boolean, default=False)
+    payment_status = Column(Boolean, default=False)
     user = relationship("DbUser", back_populates="plantations")
     statuses = relationship("DbPlantationStatus", back_populates="plantation")
     user_access = relationship("DbPlantationAccess", back_populates="plantation", cascade="all, delete-orphan")

@@ -30,6 +30,7 @@ def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(adm
 
 @router.post("/register", description='send plantation form for verification', response_description="plantation form submitted", status_code=status.HTTP_201_CREATED)
 def register_plantation(data: UserPlantation, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
+    
     plantation = db_plantation.create_plantation(db, data)
     if plantation:
         return {"message": "Plantation form submitted successfully"}
@@ -104,9 +105,16 @@ def delete_plantation(plantation_id: int, db: Session = Depends(get_db), token: 
     raise HTTPException(status_code=404, detail="Plantations not found")
 
 
-@router.put("/update/{plantation_id}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation(plantation_id: int, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
-    plantation = db_plantation.update_plantation_status(db, plantation_id)
+@router.put("/user_status/{plantation_id}/{verified}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
+def update_plantation(plantation_id: int, verified: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+    plantation = db_plantation.update_plantation_status(db, plantation_id, verified=True)
+    if plantation:
+        return {"message": "Plantation verified successfully"}
+    raise HTTPException(status_code=404, detail="Plantations not found")
+
+@router.put("/payment_status/{plantation_id}/{payment_status}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
+def update_plantation(plantation_id: int, payment_status: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+    plantation = db_plantation.update_plantation_status(db, plantation_id, payment_status=True)
     if plantation:
         return {"message": "Plantation verified successfully"}
     raise HTTPException(status_code=404, detail="Plantations not found")

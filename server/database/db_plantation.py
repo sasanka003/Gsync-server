@@ -49,11 +49,20 @@ def delete_plantation(db: Session, plantation_id: int):
     return 'ok'
 
 
-def update_plantation_status(db: Session, plantation_id: int):
+def update_plantation_status(db: Session, plantation_id: int, verified: bool):
     plantation = db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
     if not plantation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Plantation with {plantation_id} not found")
-    plantation.verified = True
+    plantation.verified = verified
+    db.commit()
+    db.refresh(plantation)
+    return plantation
+
+def update_payment_status(db: Session, plantation_id: int, payment_status: bool):
+    plantation = db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
+    if not plantation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Plantation with {plantation_id} not found")
+    plantation.payment_status = payment_status
     db.commit()
     db.refresh(plantation)
     return plantation

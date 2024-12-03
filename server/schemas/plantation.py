@@ -60,7 +60,9 @@ class PlantationDisplay(BaseModel):
     plantation_length: float
     plantation_width: float
     verified: bool
+    payment_status: bool
     user_id: UUID
     subscription: Subscription
+
     class Config:
         from_attributes = True
