@@ -13,9 +13,9 @@ def create_plantation(db: Session, request: UserPlantation):
         name=request.name,
         plant_type=request.plant_type,
         plantation_type=request.plantation_type,
-        city=request.location.city,
-        province=request.location.province,
-        country=request.location.region,
+        city=request.city,
+        province=request.province,
+        country=request.country,
         plantation_length=request.area.length,
         plantation_width=request.area.width,
         subscription=request.subscription

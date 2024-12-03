@@ -3,10 +3,12 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from typing import Optional, List
 import uuid
+from datetime import datetime
 
 from database.database import get_db
 from auth.authentication import get_current_user, admin_only
-from database import db_plantation 
+from database import db_plantation
+from database.db_sensor import add_sensor, SensorBase
 from schemas.plantation import PlantationDisplay, UserPlantation
 
 
@@ -30,7 +32,12 @@ def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(adm
 
 @router.post("/register", description='send plantation form for verification', response_description="plantation form submitted", status_code=status.HTTP_201_CREATED)
 def register_plantation(data: UserPlantation, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
-    
+    plantation_exists = db_plantation.get_user_plantations(db, token.user_id)
+    if plantation_exists:
+        raise HTTPException(
+            status_code=400,
+            detail="User already owns a plantation. Cannot create another plantation."
+        )
     plantation = db_plantation.create_plantation(db, data)
     if plantation:
         return {"message": "Plantation form submitted successfully"}
@@ -106,14 +113,21 @@ def delete_plantation(plantation_id: int, db: Session = Depends(get_db), token: 
 
 
 @router.put("/user_status/{plantation_id}/{verified}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation(plantation_id: int, verified: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+def update_user_status(plantation_id: int, verified: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     plantation = db_plantation.update_plantation_status(db, plantation_id, verified=True)
-    if plantation:
-        return {"message": "Plantation verified successfully"}
-    raise HTTPException(status_code=404, detail="Plantations not found")
+    if not plantation:
+        raise HTTPException(status_code=404, detail="Plantation not found")
+
+    # Generate sensor ID based on current date and time
+    sensor_id = int(datetime.now().strftime("%Y%m%d%H%M%S"))  # Format: YYYYMMDDHHMMSS
+
+    # Call add_sensor function
+    add_sensor(db, SensorBase(sensor_id=sensor_id, plantation_id=plantation_id))
+
+    return {"message": "Plantation verified successfully", "sensor_id": sensor_id}
 
 @router.put("/payment_status/{plantation_id}/{payment_status}", description='verify a plantation status by id', response_description="plantation updated", responses={404: {"description": "Plantation not found"}})
-def update_plantation(plantation_id: int, payment_status: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
+def update_payment_status(plantation_id: int, payment_status: bool, db: Session = Depends(get_db), token: dict = Depends(admin_only)):
     plantation = db_plantation.update_plantation_status(db, plantation_id, payment_status=True)
     if plantation:
         return {"message": "Plantation verified successfully"}
