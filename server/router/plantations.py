@@ -7,8 +7,7 @@ import uuid
 from database.database import get_db
 from auth.authentication import get_current_user, admin_only
 from database import db_plantation 
-from database.db_plantation import UserPlantation
-from schemas.plantation import PlantationDisplay
+from schemas.plantation import PlantationDisplay, UserPlantation
 
 
 router = APIRouter(
@@ -30,7 +29,7 @@ def get_all_plantations(db: Session = Depends(get_db), token: dict = Depends(adm
 
 
 @router.post("/register", description='send plantation form for verification', response_description="plantation form submitted", status_code=status.HTTP_201_CREATED)
-def register_plantation(data: UserPlantation, db: Session = Depends(get_db)):
+def register_plantation(data: UserPlantation, db: Session = Depends(get_db), token: dict = Depends(get_current_user)):
     plantation = db_plantation.create_plantation(db, data)
     if plantation:
         return {"message": "Plantation form submitted successfully"}

@@ -4,39 +4,15 @@ from sqlalchemy.orm import Session
 from database.models import DbPlantation
 from fastapi import status, HTTPException
 from enum import Enum
-
-
-class Location(BaseModel):
-    city: str
-    province: str
-    region: str
-
-class Area(BaseModel):
-    length: float
-    width: float
-
-# create Enum for subscription
-class Subscription(str, Enum):
-    Basic = "Basic"
-    Gardener = "Gardener"
-    Enterprise = "Enterprise"
-
-
-class UserPlantation(BaseModel):
-    user_id: UUID
-    name: str
-    type: str
-    location: Location
-    area: Area
-    subscription: Subscription
-
+from schemas.plantation import UserPlantation
 
 
 def create_plantation(db: Session, request: UserPlantation):
     new_plantation = DbPlantation(
         user_id=request.user_id,
         name=request.name,
-        type=request.type,
+        plant_type=request.plant_type,
+        plantation_type=request.plantation_type,
         city=request.location.city,
         province=request.location.province,
         country=request.location.region,

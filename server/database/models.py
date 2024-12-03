@@ -108,7 +108,8 @@ class DbPlantation(Base):
     __tablename__ = "plantation"
     plantation_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(Text, nullable=False)
-    type = Column(String, nullable=False)
+    plant_type = Column(Enum('Tomato', 'Bell_pepper', 'Capsicum', name="plant_types"), nullable=False)
+    plantation_type = Column(Enum('Indoor', 'Outdoor', name="plantation_types"), nullable=False)
     city = Column(Text, nullable=False)
     province = Column(Text)
     country = Column(Text, nullable=False, default="Srilanka")
