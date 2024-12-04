@@ -66,20 +66,7 @@ def get_all_plantations(db: Session):
 
 def get_plantation(db: Session, plantation_id: int):
     user_alias = aliased(DbUser)  # Alias for clarity
-    return db.query(
-        DbPlantation.plantation_id,
-        DbPlantation.name.label("plantation_name"),  # Alias for plantation name
-        DbPlantation.type,
-        user_alias.name.label("user_name"),  # Alias for user name
-        DbPlantation.city,
-        DbPlantation.province,
-        DbPlantation.country,
-        DbPlantation.plantation_width,
-        DbPlantation.plantation_length
-    ) \
-        .join(DbUser, DbPlantation.user_id == DbUser.user_id)\
-        .filter(DbPlantation.plantation_id == plantation_id)\
-        .first()
+    return db.query(DbPlantation).filter(DbPlantation.plantation_id == plantation_id).first()
 
 
 def update_plantation_status(db: Session, plantation_id: int, request:UpdatePlantationStatus, plantation_status: str):
